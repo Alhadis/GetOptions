@@ -2,18 +2,16 @@
 "use strict";
 
 
-class OptionParam{
-	
-	constructor(key){
-		this.names = key.split(/\|/g);
-		this.enum  = this.names.length > 1;
-	}
-}
-
-
 
 class Option{
 	
+	/**
+	 * Create a new Option instance.
+	 *
+	 * @param {String|Array} names  - Comma-separated list of names (e.g., "-l, --long-list, --length")
+	 * @param {String}       params - List of args the option expects (e.g., "<num> <type>" or "[num] [type]", etc)
+	 * @constructor
+	 */
 	constructor(names, params){
 		let shortNames = {};
 		let longNames  = {};
@@ -50,8 +48,48 @@ class Option{
 		params = params.split(/\s+/g);
 		
 		this.params = [];
-		for(let i of params)
-			this.params.push(new OptionParam(i));
+		this.values = [];
+		for(let name of params){
+			if(name){
+				this.params.push(name);
+				if(/\.{3}$/.test(name))
+					this.variadic = true;
+			}
+		}
+	}
+	
+	
+	
+	/**
+	 * Return the number of parameters this option expects/accepts.
+	 *
+	 * @readonly
+	 * @return {Number}
+	 */
+	get arity(){
+		return this.params ? this.params.length : 0;
+	}
+	
+	
+	/**
+	 * Return an array of all names this Option recognises, long or short.
+	 *
+	 * @readonly
+	 * @return {Array}
+	 */
+	get names(){
+		return this.shortNames.concat(this.longNames);
+	}
+	
+	
+	/**
+	 * Whether or not the Option still has room for remaining parameters.
+	 *
+	 * @readonly
+	 * @return {Boolean}
+	 */
+	get canCollect(){
+		return this.variadic || this.values.length < this.params.length;
 	}
 }
 
@@ -60,6 +98,10 @@ class Option{
 function getOpts(input, optdef){
 	let shortNames = {};
 	let longNames  = {};
+	let result     = {
+		options: new Object(null),
+		argv:    []
+	};
 
 	
 	for(let i in optdef){
@@ -71,39 +113,95 @@ function getOpts(input, optdef){
 			if(shortNames[n] !== undefined)
 				throw new ReferenceError(`Short option "-${n}" already defined`);
 			
-			shortNames[n] = option;
+			shortNames["-"+n] = option;
 		});
 		
 		option.longNames.forEach(n => {
 			
-			/** Again, don't allow duplicate option names; that probably isn't what the author intended */
+			/** Again, don't allow duplicate option names; that obviously isn't what the author intended */
 			if(longNames[n] !== undefined)
 				throw new ReferenceError(`Long option "--${n}" already defined`);
 			
-			longNames[n] = option;
+			longNames["--"+n] = option;
 		});
 	}
 	
+	
+	/** Pointer to the option that's currently picking up arguments */
+	let currentOption;
+	
+	
+	/** Pushes the contents of the current option into result.options and resets the pointer */
+	let wrapItUp = () => {
+		let optValue = currentOption.values;
+		
+		/** Don't store solitary values in an array. Store them directly as strings */
+		if(currentOption.arity === 1)
+			optValue = optValue[0];
+		
+		currentOption.names.forEach(n => {result.options[n] = optValue});
+		currentOption = null;
+	};
+	
+	
+	
+	/** Start processing the arguments we were given to handle */
 	for(let i = 0, l = input.length; i < l; ++i){
 		let arg = input[i];
-		console.log(longNames);
+		let opt = shortNames[arg] || longNames[arg];
+		
+		
+		/** This argument matches a recognised option name */
+		if(opt){
+			
+			/** Did we have an existing option that was collecting values? */
+			if(currentOption) wrapItUp();
+			
+			
+			/** This option takes at least one argument */
+			if(opt.arity)
+				currentOption = opt;
+			
+			/** This option takes no arguments, so just assign it a value of "true" */
+			else opt.names.forEach(n => {result.options[n] = true});
+		}
+		
+		
+		else{
+			/** A previous option is still collecting arguments */
+			if(currentOption && currentOption.canCollect)
+				currentOption.values.push(arg);
+			
+			/** Not an option's argument, just a... "regular" argument or something */
+			else{
+				result.argv.push(arg);
+				
+				/** If there was an option collecting stuff, show it the door */
+				currentOption && wrapItUp();
+			}
+		}
 	}
+	
+	
+	/** Ended abruptly? */
+	if(currentOption) wrapItUp();
+	
+	return result;
 }
 
 
 
-let argv = [
-	"--set-config", "path", "~/.files/something", "subcommand", "subcommand-param"
-];
+let process = require("process");
 
-getOpts(argv, {
+let pls = getOpts(process.argv, {
 	"-h, --help, --usage":    "",
 	"-v, --version":          "",
 	"-n, --number-of-lines":  "<number>",
 	"-l, --level":            "<level>",
-	"-t, --type":             "<normal|super|large>",
-	"-z, --set-size":         "<small|medium|large>",
+	"-t, --type":             "<type>",
+	"-z, --set-size":         "<size>",
 	"-c, --set-config":       "<key> <value>",
 	"-d, --delete-files":     "<safely> <files...>",
-	"-s, -T, --set-type":     "<key> <normal|super|large>"
+	"-s, -T, --set-type":     "<key> <type>"
 });
+console.log(pls);
