@@ -1,16 +1,16 @@
 GetOptions
 ==========
 
-The JavaScript equivalent of `getopts`. No frills, no bullshit, nothing but cold, hard option extraction.
+The JavaScript equivalent of `getopts`. No frills, no bullshit; nothing but cold, hard option extraction.
 
 **Use this module if you**
 * Are happy validating and type-checking input yourself
 * Don't mind writing your own documentation
 * Are just interested in lifting options so that this...  
 <code>$ program <b><ins>--log-path</ins> <ins>/var/log/stuff.txt</ins></b> generate all-files <b><ins>--verbose</ins></b></code>  
-... gets filtered like this:  
+<br/>... gets filtered like this:  
 <code>$ program generate all-files</code>  
-... with all the helpful stuff sorted neatly in one little object:
+<br/>... with all the helpful stuff sorted neatly in one little object:
 ```js
 let result = {
 	options: {
@@ -46,7 +46,7 @@ Short and long forms of each defined option, separated by commas.
 **Right column:**  
 Arguments each option takes, if any.
 
-Note there's no requirement to enclose each parameter's name with `< > [ ] ( )`. These characters are just permitted for readability, and are ignored by the function when it runs. They're allowed because some authors might find them easier on the eyes than simple space-separation.
+Note: There's no requirement to enclose each parameter's name with `< > [ ] ( )`. These characters are just permitted for readability, and are ignored by the function when it runs. They're allowed because some authors might find them easier on the eyes than simple space-separation.
 
 
 Result
