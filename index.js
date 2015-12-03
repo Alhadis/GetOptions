@@ -95,10 +95,29 @@ class Option{
 
 
 
-function getOpts(input, optdef){
-	let shortNames = {};
-	let longNames  = {};
-	let result     = {
+/**
+ * Convert a kebab-cased-string into a camelCasedString.
+ *
+ * @param {String} input
+ * @return {String}
+ */
+function kebabToCamelCase(input){
+	return input.toLowerCase().replace(/([a-z])-+([a-z])/g, function(match, a, b){
+		return a + b.toUpperCase();
+	});
+}
+
+
+function getOpts(input, optdef, config){
+	
+	/** Optional options hash controlling option-creation */
+	config           = config || {};
+	let noCamelCase  = config.noCamelCase;
+	
+	
+	let shortNames   = {};
+	let longNames    = {};
+	let result       = {
 		options: new Object(null),
 		argv:    []
 	};
@@ -139,7 +158,14 @@ function getOpts(input, optdef){
 		if(currentOption.arity === 1)
 			optValue = optValue[0];
 		
-		currentOption.names.forEach(n => {result.options[n] = optValue});
+		currentOption.names.forEach(n => {
+			
+			/** Decide whether to camelCase this option name */
+			if(!noCamelCase && /-/.test(n))
+				n = kebabToCamelCase(n);
+			
+			result.options[n] = optValue;
+		});
 		currentOption = null;
 	};
 	
