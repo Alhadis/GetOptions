@@ -141,9 +141,10 @@ function kebabToCamelCase(input){
 function getOpts(input, optdef, config){
 	
 	/** Optional options hash controlling option-creation */
-	config           = config || {};
-	let noCamelCase  = config.noCamelCase;
-	let ignoreEquals = config.ignoreEquals;
+	config                 = config || {};
+	let noAliasPropagation = config.noAliasPropagation;
+	let noCamelCase        = config.noCamelCase;
+	let ignoreEquals       = config.ignoreEquals;
 	
 	
 	let shortNames   = {};
@@ -181,6 +182,38 @@ function getOpts(input, optdef, config){
 	let currentOption;
 	
 	
+	/** Assigns an option's parsed value to the returned object's .options property */
+	let setValue = (option, value) => {
+		
+		
+		/** Assign the value only to the option name it matched */
+		if(noAliasPropagation){
+			let name = option.lastMatchedName;
+			
+			/** Special alternative: in lieu of using the matched option name, use the first --long-name instead */
+			if("first-only" === noAliasPropagation)
+				name = option.longNames[0];
+			
+			/** camelCase? */
+			if(!noCamelCase && /-/.test(name))
+				name = kebabToCamelCase(name);
+			
+			result.options[name] = value;
+		}
+		
+		
+		/** Copy across every alias this option's recognised by */
+		else option.names.forEach(n => {
+			
+			/** Decide whether to camelCase this option name */
+			if(!noCamelCase && /-/.test(n))
+				n = kebabToCamelCase(n);
+			
+			result.options[n] = value;
+		});
+	};
+	
+	
 	/** Pushes the contents of the current option into result.options and resets the pointer */
 	let wrapItUp = () => {
 		let optValue = currentOption.values;
@@ -188,15 +221,8 @@ function getOpts(input, optdef, config){
 		/** Don't store solitary values in an array. Store them directly as strings */
 		if(currentOption.arity === 1)
 			optValue = optValue[0];
-		
-		currentOption.names.forEach(n => {
-			
-			/** Decide whether to camelCase this option name */
-			if(!noCamelCase && /-/.test(n))
-				n = kebabToCamelCase(n);
-			
-			result.options[n] = optValue;
-		});
+
+		setValue(currentOption, optValue);
 		currentOption = null;
 	};
 	
@@ -240,9 +266,8 @@ function getOpts(input, optdef, config){
 				
 				segments = [].concat(...segments);
 				input.splice(i, 1, ...segments);
-				l = input.length;
+				l =  input.length;
 				i += segments.length;
-				console.log("Input is now: ", input);
 				continue;
 			}
 			
@@ -251,7 +276,7 @@ function getOpts(input, optdef, config){
 			if(legalNames.test(arg)){
 				let match = arg.match(/^([^=]+)=(.+)$/);
 				input.splice(i, 1, match[1], match[2]);
-				l = input.length;
+				l =  input.length;
 				i += 2;
 				continue;
 			}
@@ -268,6 +293,10 @@ function getOpts(input, optdef, config){
 		/** This argument matches a recognised option name */
 		if(opt){
 			
+			/** Record the name given on command-line that matched the option */
+			opt.lastMatchedName = arg;
+			
+			
 			/** Did we have an existing option that was collecting values? */
 			if(currentOption) wrapItUp();
 			
@@ -277,7 +306,7 @@ function getOpts(input, optdef, config){
 				currentOption = opt;
 			
 			/** This option takes no arguments, so just assign it a value of "true" */
-			else opt.names.forEach(n => {result.options[n] = true});
+			else setValue(opt, true); 
 		}
 		
 		
@@ -286,7 +315,7 @@ function getOpts(input, optdef, config){
 			if(currentOption && currentOption.canCollect)
 				currentOption.values.push(arg);
 			
-			/** Not an option's argument, just a... "regular" argument or something */
+			/** Not an option's argument, just a... "regular" argument or whatever y'wanna call it */
 			else{
 				result.argv.push(arg);
 				
@@ -317,5 +346,7 @@ let pls = getOpts(process.argv, {
 	"-c, --set-config":       "<numbers=\\d+> <letters=[A-Za-z]+>",
 	"-d, --delete-files":     "<safely> <files...>",
 	"-s, -T, --set-type":     "<key> <type>"
+}, {
+	noAliasPropagation: "first-only"
 });
 console.log(pls);
