@@ -113,6 +113,7 @@ function getOpts(input, optdef, config){
 	/** Optional options hash controlling option-creation */
 	config           = config || {};
 	let noCamelCase  = config.noCamelCase;
+	let ignoreEquals = config.ignoreEquals;
 	
 	
 	let shortNames   = {};
@@ -169,6 +170,26 @@ function getOpts(input, optdef, config){
 		currentOption = null;
 	};
 	
+	
+	/** Is pre-processing of the argument list necessary? */
+	if(!ignoreEquals){
+		
+		/** Limit equals-sign expansion to items that begin with recognised option names */
+		let legalNames = new RegExp("^(?:" + Object.keys(longNames).join("|") + ")=");
+
+		for(let i = 0, l = input.length; i < l; ++i){
+			let arg   = input[i];
+			
+			/** Expand "--option=value" sequences to become "--option value" */
+			if(legalNames.test(arg)){
+				let match = arg.match(/^([^=]+)=(.+)$/);
+				input.splice(i, 1, match[1], match[2]);
+				l = input.length;
+				i += 2;
+				continue;
+			}
+		}
+	}
 	
 	
 	/** Start processing the arguments we were given to handle */
