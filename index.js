@@ -41,21 +41,51 @@ class Option{
 		if(Array.isArray(params))
 			params = params.join(" ");
 		
-		/** Remove punctuation added for readability */
-		params = params.replace(/[<\[\]\(\)\{\}>]/g, "");
-		
-		/** Split our cleaned-up params list by whitespace */
+		/** Split our parameter list by whitespace */
 		params = params.split(/\s+/g);
+		
+		/** Remove punctuation added for readability */
+		params = params.map(e => e.replace(/^<(.+?)>$|^\[(.+?)\]$|^\((.+?)\)$/gm, function(){
+			return [].slice.call(arguments, 1, 4).filter(e => e).join("");
+		}));
+		
 		
 		this.params = [];
 		this.values = [];
 		for(let name of params){
+			
+			/** Make sure the parameter isn't blank */
 			if(name){
-				this.params.push(name);
+				
+				/** Check for an additional regex pattern to use for disambiguating bundled options */
+				let splitName = name.match(/^([^=]+)(?:=(.+)?)?$/);
+				
+				this.params.push({
+					name:      splitName[1],
+					pattern:   splitName[2] || ".+"
+				});
+				
 				if(/\.{3}$/.test(name))
 					this.variadic = true;
 			}
 		}
+	}
+	
+	
+	/**
+	 * Return a regex string for matching this option when expressed in bundled short-form.
+	 *
+	 * @return {String}
+	 */
+	getBundlePattern(){
+		
+		/** We've already generated this regex before; just return the cached result */
+		if(this._bundlePattern)
+			return this._bundlePattern;
+		
+		let param = this.params.map(p => "("+p.pattern+")?").join("");
+		let names = this.shortNames.length === 1 ? this.shortNames[0] : ("[" + this.shortNames.join("") + "]");
+		return (this._bundlePattern = names + param);
 	}
 	
 	
@@ -171,14 +201,51 @@ function getOpts(input, optdef, config){
 	};
 	
 	
+	
+	/** Tackle bundling: make sure there's at least one option with a short name to work with */
+	let nameKeys = Object.keys(shortNames);
+	let bundleMatch, bundlePatterns;
+	
+	if(nameKeys.length){
+		bundlePatterns  = nameKeys.map(n => shortNames[n].getBundlePattern()).join("|");
+		bundleMatch     = new RegExp("-("+bundlePatterns+")+", "g");
+		bundlePatterns  = new RegExp(bundlePatterns, "g");
+	}
+	
+	
+	
 	/** Is pre-processing of the argument list necessary? */
-	if(!ignoreEquals){
+	if(!ignoreEquals || bundleMatch){
 		
 		/** Limit equals-sign expansion to items that begin with recognised option names */
 		let legalNames = new RegExp("^(?:" + Object.keys(longNames).join("|") + ")=");
-
+		
 		for(let i = 0, l = input.length; i < l; ++i){
 			let arg   = input[i];
+			
+			/** Expand bundled option clusters ("-mvl2" -> "-m -v -l 2") */
+			if(bundleMatch.test(arg)){
+				let segments = arg.match(bundlePatterns).map(m => {
+					
+					/** Obtain a pointer to the original Option instance that defined this short-name */
+					let opt = shortNames["-"+m[0]];
+					
+					/** This option doesn't accept any arguments, so just keep it simple */
+					if(!opt.arity)
+						return ["-"+m[0]];
+					
+					let matches = m.match(new RegExp(opt.getBundlePattern())).slice(1).filter(i => i);
+					return ["-"+m[0], ...matches];
+				});
+				
+				segments = [].concat(...segments);
+				input.splice(i, 1, ...segments);
+				l = input.length;
+				i += segments.length;
+				console.log("Input is now: ", input);
+				continue;
+			}
+			
 			
 			/** Expand "--option=value" sequences to become "--option value" */
 			if(legalNames.test(arg)){
@@ -243,11 +310,11 @@ let process = require("process");
 let pls = getOpts(process.argv, {
 	"-h, --help, --usage":    "",
 	"-v, --version":          "",
-	"-n, --number-of-lines":  "<number>",
+	"-n, --number-of-lines":  "<number=\\d+>",
 	"-l, --level":            "<level>",
 	"-t, --type":             "<type>",
-	"-z, --set-size":         "<size>",
-	"-c, --set-config":       "<key> <value>",
+	"-z, --set-size":         "[width=\\d+] [height=\\d+]",
+	"-c, --set-config":       "<numbers=\\d+> <letters=[A-Za-z]+>",
 	"-d, --delete-files":     "<safely> <files...>",
 	"-s, -T, --set-type":     "<key> <type>"
 });
