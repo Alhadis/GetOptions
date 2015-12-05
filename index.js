@@ -202,13 +202,6 @@ function getOpts(input, optdef, config){
 	let currentOption;
 	
 	
-	/**
-	 * Zero-based index of the iteration's current position in what'll be the final argv array.
-	 * Used to maintain argument order when multipleOptions is set to "limit-first" or "limit-last".
-	 */
-	let argvIndex = 0;
-	
-	
 	/** Manages duplicated option values when needed */
 	let resolveDuplicate = (option, name, value) => {
 		
@@ -230,15 +223,7 @@ function getOpts(input, optdef, config){
 			/** Use the first option; treat any following duplicates as items of argv */
 			case "limit-first":{
 				let values = Array.isArray(value) ? value : [value];
-				
-				option.extraValues = injectIntoArray(
-					option.extraValues || [],
-					argvIndex - 1,
-					option.lastMatchedName,
-					...values
-				);
-				
-				argvIndex += values.length + 1;
+				result.argv.push(option.prevMatchedName, ...values);
 				break;
 			}
 			
@@ -417,7 +402,11 @@ function getOpts(input, optdef, config){
 				currentOption = opt;
 			
 			/** This option takes no arguments, so just assign it a value of "true" */
-			else setValue(opt, true); 
+			else setValue(opt, true);
+			
+			
+			/** Store an additional back-reference to the current option's name */
+			opt.prevMatchedName = arg;
 		}
 		
 		
@@ -428,11 +417,10 @@ function getOpts(input, optdef, config){
 			
 			/** Not an option's argument, just a... "regular" argument or whatever y'wanna call it */
 			else{
-				result.argv.push(arg);
-				++argvIndex;
-				
 				/** If there was an option collecting stuff, show it the door */
 				currentOption && wrapItUp();
+				
+				result.argv.push(arg);
 			}
 		}
 	}
@@ -441,23 +429,6 @@ function getOpts(input, optdef, config){
 	/** Ended abruptly? */
 	if(currentOption) wrapItUp();
 	
-	
-	/** Check if we need to return anything to the argv array */
-	if("limit-first" === multipleOptions || "limit-last" === multipleOptions){
-		
-		for(let options of [shortNames, longNames]){
-			for(let i in options){
-				let opt = options[i];
-				if(opt.extraValues){
-					opt.extraValues.forEach((arg, index) => injectIntoArray(result.argv, index, arg));
-					delete opt.extraValues;
-				}
-			}
-		}
-		
-	}
-
-	
 	return result;
 }
 
@@ -465,7 +436,7 @@ function getOpts(input, optdef, config){
 
 let process = require("process");
 
-let pls = getOpts(process.argv.slice(1), {
+let pls = getOpts(process.argv.slice(2), {
 	"-h, --help, --usage":    "",
 	"-v, --version":          "",
 	"-n, --number-of-lines":  "<number=\\d+>",
@@ -480,4 +451,5 @@ let pls = getOpts(process.argv.slice(1), {
 	multipleOptions:    "limit-first"
 });
 
-console.log(pls);
+console.log(pls.options);
+console.log(pls.argv.join(" "));
