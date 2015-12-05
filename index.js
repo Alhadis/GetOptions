@@ -234,7 +234,7 @@ function getOpts(input, optdef, config){
 	
 	if(nameKeys.length){
 		bundlePatterns  = nameKeys.map(n => shortNames[n].getBundlePattern()).join("|");
-		bundleMatch     = new RegExp("-("+bundlePatterns+")+", "g");
+		bundleMatch     = new RegExp("^-("+bundlePatterns+")+", "g");
 		bundlePatterns  = new RegExp(bundlePatterns, "g");
 	}
 	
