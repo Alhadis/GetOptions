@@ -138,6 +138,24 @@ function kebabToCamelCase(input){
 }
 
 
+/**
+ * Inject one or more values into an array at an arbitrary position.
+ *
+ * This behaves similar to array.splice(index, 0, values...), except the
+ * array is extended if the index is greater than the array's number of elements.
+ *
+ * @param {Array}  array - Array to operate upon. The value is modified.
+ * @param {Number} index - Zero-based index of the array to inject the values into
+ * @return {Array}         The modified array originally passed to the function
+ */
+function injectIntoArray(array, index, ...values){
+	if(index > array.length)
+		array.length = index;
+	array.splice(index, 0, ...values);
+	return array;
+}
+
+
 function getOpts(input, optdef, config){
 	
 	/** Optional options hash controlling option-creation */
@@ -145,6 +163,7 @@ function getOpts(input, optdef, config){
 	let noAliasPropagation = config.noAliasPropagation;
 	let noCamelCase        = config.noCamelCase;
 	let ignoreEquals       = config.ignoreEquals;
+	let multipleOptions    = config.multipleOptions || "use-last";
 	
 	
 	let shortNames   = {};
@@ -155,6 +174,7 @@ function getOpts(input, optdef, config){
 	};
 
 	
+	/** Define the Options that the author's described in optdef */
 	for(let i in optdef){
 		let option = new Option(i, optdef[i]);
 		
@@ -182,6 +202,79 @@ function getOpts(input, optdef, config){
 	let currentOption;
 	
 	
+	/**
+	 * Zero-based index of the iteration's current position in what'll be the final argv array.
+	 * Used to maintain argument order when multipleOptions is set to "limit-first" or "limit-last".
+	 */
+	let argvIndex = 0;
+	
+	
+	/** Manages duplicated option values when needed */
+	let resolveDuplicate = (option, name, value) => {
+		
+		switch(multipleOptions){
+			
+			/** Use the first value (or set of values); discard any following duplicates */
+			case "use-first":{
+				return result.options[name];
+				break;
+			}
+			
+			/** Use the last value (or set of values); discard any preceding duplicates. Default. */
+			case "use-last":
+			default:{
+				return result.options[name] = value;
+				break;
+			}
+			
+			/** Use the first option; treat any following duplicates as items of argv */
+			case "limit-first":{
+				let values = Array.isArray(value) ? value : [value];
+				
+				option.extraValues = injectIntoArray(
+					option.extraValues || [],
+					argvIndex - 1,
+					option.lastMatchedName,
+					...values
+				);
+				
+				argvIndex += values.length + 1;
+				break;
+			}
+			
+			/** Use only the last option; treat any preceding duplicates as items of argv */
+			case "limit-last":{
+				
+				break;
+			}
+			
+			
+			/** Chuck a hissy-fit if that's what the author wants */
+			case "error":{
+				let error = new TypeError(`Attempting to reassign option "${name}" with value(s) ${JSON.stringify(value)}`);
+				error.affectedOption = option;
+				error.affectedValue  = value;
+				throw error;
+				break;
+			}
+			
+			case "append":{
+				break;
+			}
+			
+			
+			case "stack":{
+				break;
+			}
+			
+			
+			case "stack-values":{
+				break;
+			}
+		}
+	};
+	
+	
 	/** Assigns an option's parsed value to the returned object's .options property */
 	let setValue = (option, value) => {
 		
@@ -198,19 +291,36 @@ function getOpts(input, optdef, config){
 			if(!noCamelCase && /-/.test(name))
 				name = kebabToCamelCase(name);
 			
-			result.options[name] = value;
+			
+			/** This option's already been set before */
+			if(result.options[name])
+				resolveDuplicate(option, name, value);
+			
+			else result.options[name] = value;
 		}
 		
 		
 		/** Copy across every alias this option's recognised by */
-		else option.names.forEach(n => {
+		else{
 			
-			/** Decide whether to camelCase this option name */
-			if(!noCamelCase && /-/.test(n))
-				n = kebabToCamelCase(n);
+			/** Store a pointer to the array that's generated from the Option's .names getter */
+			let names = option.names;
 			
-			result.options[n] = value;
-		});
+			
+			/** Ascertain if this option's being duplicated */
+			if(result.options[ names[0] ])
+				value = resolveDuplicate(option, value);
+			
+			
+			option.names.forEach(name => {
+				
+				/** Decide whether to camelCase this option name */
+				if(!noCamelCase && /-/.test(name))
+					name = kebabToCamelCase(name);
+				
+				result.options[name] = value;
+			});
+		}
 	};
 	
 	
@@ -223,6 +333,7 @@ function getOpts(input, optdef, config){
 			optValue = optValue[0];
 
 		setValue(currentOption, optValue);
+		currentOption.values = [];
 		currentOption = null;
 	};
 	
@@ -318,6 +429,7 @@ function getOpts(input, optdef, config){
 			/** Not an option's argument, just a... "regular" argument or whatever y'wanna call it */
 			else{
 				result.argv.push(arg);
+				++argvIndex;
 				
 				/** If there was an option collecting stuff, show it the door */
 				currentOption && wrapItUp();
@@ -329,6 +441,23 @@ function getOpts(input, optdef, config){
 	/** Ended abruptly? */
 	if(currentOption) wrapItUp();
 	
+	
+	/** Check if we need to return anything to the argv array */
+	if("limit-first" === multipleOptions || "limit-last" === multipleOptions){
+		
+		for(let options of [shortNames, longNames]){
+			for(let i in options){
+				let opt = options[i];
+				if(opt.extraValues){
+					opt.extraValues.forEach((arg, index) => injectIntoArray(result.argv, index, arg));
+					delete opt.extraValues;
+				}
+			}
+		}
+		
+	}
+
+	
 	return result;
 }
 
@@ -336,7 +465,7 @@ function getOpts(input, optdef, config){
 
 let process = require("process");
 
-let pls = getOpts(process.argv, {
+let pls = getOpts(process.argv.slice(1), {
 	"-h, --help, --usage":    "",
 	"-v, --version":          "",
 	"-n, --number-of-lines":  "<number=\\d+>",
@@ -347,6 +476,8 @@ let pls = getOpts(process.argv, {
 	"-d, --delete-files":     "<safely> <files...>",
 	"-s, -T, --set-type":     "<key> <type>"
 }, {
-	noAliasPropagation: "first-only"
+	noAliasPropagation: "first-only",
+	multipleOptions:    "limit-first"
 });
+
 console.log(pls);
