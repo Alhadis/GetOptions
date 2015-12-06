@@ -1,0 +1,14 @@
+{
+	"name": "get-options",
+	"version": "0.0.1",
+	"description": "JavaScript's answer to getopts. Simple, obvious, and direct.",
+	"keywords": ["CLI", "getopt", "getopts", "options", "argv", "command-line", "configuration", "config"],
+	"repository": "https://github.com/Alhadis/GetOptions",
+	"license": "ISC",
+	"engines": { "node": ">=5.0.0" },
+	"dependencies": {},
+	"devDependencies": {
+		"mocha": "*",
+		"chai":  "*"
+	}
+}
