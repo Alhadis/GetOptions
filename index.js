@@ -306,7 +306,7 @@ function getOpts(input, optdef, config){
 			
 			/** Special alternative: in lieu of using the matched option name, use the first --long-name instead */
 			if("first-only" === noAliasPropagation)
-				name = option.longNames[0];
+				name = option.longNames[0] || option.shortNames[0];
 			
 			/** camelCase? */
 			if(!noCamelCase && /-/.test(name))
