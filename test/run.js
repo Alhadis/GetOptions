@@ -26,7 +26,7 @@ describe("getOpts()", function(){
 			let description = name ? (/%[sdj%]/.test(name) ? util.format(name, value) : name) : util.format("Correctly parse %j", value);
 			
 			it(description, function(){
-				let args   = [value.split(/ /g), optdef, config];
+				let args   = [value.split(/\s+/g), optdef, config];
 				let result = getOpts.apply(null, args);
 				
 				assert.deepEqual(result, expected[index]);
