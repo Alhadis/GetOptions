@@ -1,0 +1,39 @@
+[
+	{
+		"input":  "-hvn2",
+		"config": {"noAliasPropagation": "first-only"},
+		"optdef": {
+			"-h, --help, --usage":    "",
+			"-v, --version":          "",
+			"-n, --number-of-lines":  "<number=\\d+>"
+		},
+		"expected": {
+			"options": {"help": true, "version": true, "numberOfLines": "2"},
+			"argv": []
+		}
+	},
+	
+	
+	{
+		"input": [
+			"-l 2 --set-size 640 480 -s alpha beta gamma",
+			"foo -l 2 bar --set-size 640 480 760 -s alpha beta gamma"
+		],
+		"config": {"noAliasPropagation": "first-only"},
+		"optdef": {
+			"-l, --level":            "<level>",
+			"-t, --type":             "<type>",
+			"-z, --set-size":         "[width=\\d+] [height=\\d+]",
+			"-c, --set-config":       "<numbers=\\d+> <letters=[A-Za-z]+>",
+			"-d, --delete-files":     "<safely> <files...>",
+			"-s, -T, --set-type":     "<key> <type>"
+		},
+		"expected": [{
+			"options": {"level": "2", "setSize": ["640", "480"], "setType": ["alpha", "beta"]},
+			"argv":    ["gamma"]
+		},{
+			"options": {"level": "2", "setSize": ["640", "480"], "setType": ["alpha", "beta"]},
+			"argv":    ["foo", "bar", "760", "gamma"]
+		}]
+	}
+]

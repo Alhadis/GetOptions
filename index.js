@@ -2,7 +2,6 @@
 "use strict";
 
 
-
 class Option{
 	
 	/**
@@ -157,7 +156,7 @@ function injectIntoArray(array, index, ...values){
 
 
 function getOpts(input, optdef, config){
-	
+
 	/** Optional options hash controlling option-creation */
 	config                 = config || {};
 	let noAliasPropagation = config.noAliasPropagation;
@@ -433,23 +432,6 @@ function getOpts(input, optdef, config){
 }
 
 
-
-let process = require("process");
-
-let pls = getOpts(process.argv.slice(2), {
-	"-h, --help, --usage":    "",
-	"-v, --version":          "",
-	"-n, --number-of-lines":  "<number=\\d+>",
-	"-l, --level":            "<level>",
-	"-t, --type":             "<type>",
-	"-z, --set-size":         "[width=\\d+] [height=\\d+]",
-	"-c, --set-config":       "<numbers=\\d+> <letters=[A-Za-z]+>",
-	"-d, --delete-files":     "<safely> <files...>",
-	"-s, -T, --set-type":     "<key> <type>"
-}, {
-	noAliasPropagation: "first-only",
-	multipleOptions:    "limit-first"
-});
-
-console.log(pls.options);
-console.log(pls.argv.join(" "));
+/** Export */
+if("undefined" !== typeof module.exports)
+	module.exports = getOpts;
