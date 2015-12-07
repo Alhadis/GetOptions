@@ -2,6 +2,7 @@
 "use strict";
 
 let fs         = require("fs");
+let util       = require("util");
 let Chai       = require("chai");
 let assert     = Chai.assert;
 
@@ -11,6 +12,7 @@ let testConfig = JSON.parse(fs.readFileSync("./test/tests.json"));
 describe("getOpts()", function(){
 	
 	for(let test of testConfig){
+		let name     = test.name;
 		let input    = test.input;
 		let optdef   = test.optdef;
 		let config   = test.config;
@@ -21,8 +23,9 @@ describe("getOpts()", function(){
 		if(!Array.isArray(expected))  expected = [expected];
 		
 		input.forEach((value, index) => {
+			let description = name ? (/%[sdj%]/.test(name) ? util.format(name, value) : name) : util.format("Correctly parse %j", value);
 			
-			it("Correctly parse \"" + value + "\"", function(){
+			it(description, function(){
 				let args   = [value.split(/ /g), optdef, config];
 				let result = getOpts.apply(null, args);
 				

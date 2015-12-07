@@ -1,5 +1,6 @@
 [
 	{
+		"name": "Parse bundles",
 		"input":  "-hvn2",
 		"config": {"noAliasPropagation": "first-only"},
 		"optdef": {
@@ -15,6 +16,7 @@
 	
 	
 	{
+		"name": "Correctly parse %j",
 		"input": [
 			"-l 2 --set-size 640 480 -s alpha beta gamma",
 			"foo -l 2 bar --set-size 640 480 760 -s alpha beta gamma"
