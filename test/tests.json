@@ -75,6 +75,17 @@
 	},
 	
 	{
+		"name": "Duplicate-option handling: limit-last",
+		"input": "alpha --set-size 640 480 beta --set-size 800 600 gamma --set-size 1024 768",
+		"config": {"noAliasPropagation": "first-only", "multipleOptions": "limit-last"},
+		"optdef": {"-s, --set-size": "<width=\\d+> <height=\\d+>"},
+		"expected": {
+			"options": {"setSize": ["1024", "768"]},
+			"argv": ["alpha", "--set-size", "640", "480", "beta", "--set-size", "800", "600", "gamma"]
+		}
+	},
+	
+	{
 		"name": "Duplicate-option handling: error",
 		"input": "--arg 1 alpha --arg 2",
 		"config": {"noAliasPropagation": "first-only", "multipleOptions": "error"},

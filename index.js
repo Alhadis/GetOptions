@@ -219,16 +219,11 @@ function getOpts(input, optdef, config){
 				break;
 			}
 			
-			/** Use the first option; treat any following duplicates as items of argv */
-			case "limit-first":{
+			/** Use the first/last options; treat any following/preceding duplicates as argv items respectively */
+			case "limit-first":
+			case "limit-last":{
 				let values = Array.isArray(value) ? value : [value];
 				result.argv.push(option.prevMatchedName, ...values);
-				break;
-			}
-			
-			/** Use only the last option; treat any preceding duplicates as items of argv */
-			case "limit-last":{
-				
 				break;
 			}
 			
@@ -322,6 +317,26 @@ function getOpts(input, optdef, config){
 	};
 	
 	
+	/** Reverses the argument order of the given array, keeping options and their parameter lists intact */
+	let flip = function(input){
+		input = input.reverse();
+		
+		/** Flip any options back into the right order */
+		for(let i = 0, l = input.length; i < l; ++i){
+			let arg = input[i];
+			let opt = shortNames[arg] || longNames[arg];
+			
+			if(opt){
+				let from    = Math.max(0, i - opt.arity);
+				let to      = i + 1;
+				let extract = input.slice(from, to).reverse();
+				input.splice(from, extract.length, ...extract);
+			}
+		}
+		
+		return input;
+	};
+	
 	
 	/** Tackle bundling: make sure there's at least one option with a short name to work with */
 	let nameKeys = Object.keys(shortNames);
@@ -379,6 +394,11 @@ function getOpts(input, optdef, config){
 	}
 	
 	
+	/** If we're handling duplicate options with "limit-last", flip the input order */
+	if("limit-last" === multipleOptions)
+		input = flip(input);
+	
+	
 	/** Start processing the arguments we were given to handle */
 	for(let i = 0, l = input.length; i < l; ++i){
 		let arg = input[i];
@@ -428,6 +448,11 @@ function getOpts(input, optdef, config){
 	/** Ended abruptly? */
 	if(currentOption) wrapItUp();
 	
+	
+	/** Check if we need to flip the returned .argv array back into the right order again */
+	if("limit-last" === multipleOptions)
+		result.argv = flip(result.argv);
+		
 	return result;
 }
 
