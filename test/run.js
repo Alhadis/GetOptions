@@ -1,13 +1,12 @@
 #!/usr/bin/env node --es_staging
 "use strict";
 
-let fs         = require("fs");
 let util       = require("util");
 let Chai       = require("chai");
 let assert     = Chai.assert;
 
 let getOpts    = require("../index.js");
-let testConfig = JSON.parse(fs.readFileSync("./test/tests.json"));
+let testConfig = require("./tests.js");
 
 
 Chai.should();

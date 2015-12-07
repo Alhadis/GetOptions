@@ -203,6 +203,7 @@ function getOpts(input, optdef, config){
 	
 	/** Manages duplicated option values when needed */
 	let resolveDuplicate = (option, name, value) => {
+		let arrayify = input => Array.isArray(input) ? input : [input];
 		
 		switch(multipleOptions){
 			
@@ -222,8 +223,7 @@ function getOpts(input, optdef, config){
 			/** Use the first/last options; treat any following/preceding duplicates as argv items respectively */
 			case "limit-first":
 			case "limit-last":{
-				let values = Array.isArray(value) ? value : [value];
-				result.argv.push(option.prevMatchedName, ...values);
+				result.argv.push(option.prevMatchedName, ...arrayify(value));
 				break;
 			}
 			
@@ -237,17 +237,59 @@ function getOpts(input, optdef, config){
 				break;
 			}
 			
+			
+			/** Add parameters of duplicate options to the argument list of the first */
 			case "append":{
+				let oldValues = arrayify(result.options[name]);
+				let newValues = arrayify(value);
+				
+				result.options[name] = oldValues.concat(newValues);
 				break;
 			}
 			
 			
+			/** Store the parameters of duplicated options in a multidimensional array */
 			case "stack":{
+				let oldValues = result.options[name];
+				let newValues = arrayify(value);
+				
+				/** This option hasn't been "stacked" yet */
+				if(!option.stacked){
+					oldValues            = arrayify(oldValues);
+					result.options[name] = [oldValues, newValues];
+					option.stacked       = true;
+				}
+				
+				/** Already "stacked", so just shove the values onto the end of the array */
+				else result.options[name].push(arrayify(newValues));
+				
 				break;
 			}
 			
 			
+			/** Store each duplicated value in an array in the order they appear */
 			case "stack-values":{
+				let values = result.options[name];
+				
+				/** First time "stacking" this option (nesting its value/s inside an array) */
+				if(!option.stacked){
+					let stack = [];
+					for(let i of arrayify(values))
+						stack.push([i]);
+					values         = stack;
+					option.stacked = true;
+				}
+				
+				arrayify(value).forEach((v, i) => {
+					
+					/** An array hasn't been created at this index yet, because an earlier option wasn't given enough parameters */
+					if(undefined === values[i])
+						values[i] = Array(values[0].length - 1);
+					
+					values[i].push(v);
+				});
+				
+				result.options[name] = values;
 				break;
 			}
 		}
