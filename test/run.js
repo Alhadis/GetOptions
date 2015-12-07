@@ -32,9 +32,9 @@ describe("getOpts()", function(){
 				let args   = [value.trim().split(/\s+/g), optdef, config];
 				let expect = expected[index], result;
 				
-				if(expect === "An error"){
+				if("error" in expect){
 					result = () => getOpts.apply(null, args);
-					assert.throw(result, "Attempting to reassign option");
+					assert.throw(result, expect.error);
 				}
 				
 				else{

@@ -90,6 +90,8 @@
 		"input": "--arg 1 alpha --arg 2",
 		"config": {"noAliasPropagation": "first-only", "multipleOptions": "error"},
 		"optdef": {"-a, --arg": "<numbers=\\d+>"},
-		"expected": "An error"
+		"expected": {
+			"error": "Attempting to reassign option"
+		}
 	}
 ]
