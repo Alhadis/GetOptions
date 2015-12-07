@@ -9,6 +9,9 @@ let assert     = Chai.assert;
 let getOpts    = require("../index.js");
 let testConfig = JSON.parse(fs.readFileSync("./test/tests.json"));
 
+
+Chai.should();
+
 describe("getOpts()", function(){
 	
 	for(let test of testConfig){
@@ -27,9 +30,17 @@ describe("getOpts()", function(){
 			
 			it(description, function(){
 				let args   = [value.trim().split(/\s+/g), optdef, config];
-				let result = getOpts.apply(null, args);
+				let expect = expected[index], result;
 				
-				assert.deepEqual(result, expected[index]);
+				if(expect === "An error"){
+					result = () => getOpts.apply(null, args);
+					assert.throw(result, "Attempting to reassign option");
+				}
+				
+				else{
+					result = getOpts.apply(null, args);
+					assert.deepEqual(result, expected[index]);
+				}
 			});
 		});
 	}
