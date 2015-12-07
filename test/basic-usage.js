@@ -22,7 +22,7 @@ describe("Basic usage", function(){
 				argv: []
 			}
 		}, {
-			input: "-r10 20 -v -n55id2",
+			input: "-r10 20 -vn55id2",
 			expected: {
 				options: {
 					range: ["10", "20"],
@@ -40,7 +40,9 @@ describe("Basic usage", function(){
 				"-h, --help, --usage":    "",
 				"-v, --version":          "",
 				"-n, --number-of-lines":  "<number=\\d+>",
+				"-m, --messages":         "",
 				"-i, --invert-matches":   "",
+				"-l, --level":            "<number=\\d+>",
 				"-d, --debug-level":      "<number=\\d+>",
 				"-c, --config":           "<key> <value>",
 				"-r, --range":            "<min=\\d+> <max=\\d+>"

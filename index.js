@@ -399,6 +399,7 @@ function getOpts(input, optdef, config){
 		let legalNames = new RegExp("^(?:" + Object.keys(longNames).join("|") + ")=");
 		
 		for(let i = 0, l = input.length; i < l; ++i){
+			bundleMatch.lastIndex = 0;
 			let arg   = input[i];
 			
 			/** Expand bundled option clusters ("-mvl2" -> "-m -v -l 2") */
