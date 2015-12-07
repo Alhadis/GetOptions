@@ -37,5 +37,48 @@
 			"options": {"level": "2", "setSize": ["640", "480"], "setType": ["alpha", "beta"]},
 			"argv":    ["foo", "bar", "760", "gamma"]
 		}]
+	},
+	
+	
+	
+	{
+		"name": "Duplicate-option handling: use-first",
+		"input": "--arg 1 alpha --arg 2 beta --arg 3 gamma --arg 4 delta",
+		"config": {"noAliasPropagation": "first-only", "multipleOptions": "use-first"},
+		"optdef": {"-a, --arg": "<numbers=\\d+>"},
+		"expected": {
+			"options": {"arg": "1"},
+			"argv": ["alpha", "beta", "gamma", "delta"]
+		}
+	},
+	
+	{
+		"name": "Duplicate-option handling: use-last",
+		"input": "--arg 1 alpha --arg 2 beta --arg 3 gamma --arg 4 delta",
+		"config": {"noAliasPropagation": "first-only", "multipleOptions": "use-last"},
+		"optdef": {"-a, --arg": "<numbers=\\d+>"},
+		"expected": {
+			"options": {"arg": "4"},
+			"argv": ["alpha", "beta", "gamma", "delta"]
+		}
+	},
+	
+	{
+		"name": "Duplicate-option handling: limit-first",
+		"input": " --arg 1 alpha --arg 2 beta --arg 3 gamma --arg 4 delta",
+		"config": {"noAliasPropagation": "first-only", "multipleOptions": "limit-first"},
+		"optdef": {"-a, --arg": "<numbers=\\d+>"},
+		"expected": {
+			"options": {"arg": "1"},
+			"argv": ["alpha", "--arg", "2", "beta", "--arg", "3", "gamma", "--arg", "4", "delta"]
+		}
+	},
+	
+	{
+		"name": "Duplicate-option handling: error",
+		"input": "--arg 1 alpha --arg 2",
+		"config": {"noAliasPropagation": "first-only", "multipleOptions": "error"},
+		"optdef": {"-a, --arg": "<numbers=\\d+>"},
+		"expected": "An error"
 	}
 ]
