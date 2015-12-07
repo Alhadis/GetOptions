@@ -10,7 +10,7 @@ describe("Duplicate option handling", function(){
 	let optdef = {"-a, --arg": "<numbers=\\d+>"};
 	let config = {
 		noAliasPropagation: "first-only",
-		multipleOptions: "use-first"
+		duplicates: "use-first"
 	};
 	
 	
@@ -40,7 +40,7 @@ describe("Duplicate option handling", function(){
 	
 	
 	it("Mode: use-last", function(){
-		config.multipleOptions = "use-last";
+		config.duplicates = "use-last";
 		
 		let tests  = [{
 			input: "--arg 1 alpha --arg 2 beta --arg 3 gamma --arg 4 delta",
@@ -66,7 +66,7 @@ describe("Duplicate option handling", function(){
 	
 	
 	it("Mode: limit-first", function(){
-		config.multipleOptions = "limit-first";
+		config.duplicates = "limit-first";
 		
 		let tests  = [{
 			input: "--arg 1 alpha --arg 2 beta --arg 3 gamma --arg 4 delta",
@@ -86,7 +86,7 @@ describe("Duplicate option handling", function(){
 	
 	
 	it("Mode: limit-last", function(){
-		config.multipleOptions = "limit-last";
+		config.duplicates = "limit-last";
 		optdef = {"-s, --set-size": "<width=\\d+> <height=\\d+>"};
 		
 		let tests  = [{
@@ -107,7 +107,7 @@ describe("Duplicate option handling", function(){
 	
 
 	it("Mode: error", function(){
-		config.multipleOptions = "error";
+		config.duplicates = "error";
 
 		let fn = () => {
 			let input  = "--arg 1 alpha --arg 2";
@@ -120,7 +120,7 @@ describe("Duplicate option handling", function(){
 	
 	
 	it("Mode: append", function(){
-		config.multipleOptions = "append";
+		config.duplicates = "append";
 		optdef = {"-s, --set-size": "<width=\\d+> <height=\\d+>"};
 		
 		let tests  = [{
@@ -141,7 +141,7 @@ describe("Duplicate option handling", function(){
 
 
 	it("Mode: stack", function(){
-		config.multipleOptions = "stack";
+		config.duplicates = "stack";
 		optdef = {"-s, --set-size": "<width=\\d+> <height=\\d+>"};
 		
 		let tests  = [{
@@ -163,7 +163,7 @@ describe("Duplicate option handling", function(){
 	
 	
 	it("Mode: stack-values", function(){
-		config.multipleOptions = "stack-values";
+		config.duplicates = "stack-values";
 		optdef = {"-s, --set-size": "<width=\\d+> <height=\\d+>"};
 		
 		let tests  = [{

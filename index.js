@@ -162,7 +162,7 @@ function getOpts(input, optdef, config){
 	let noAliasPropagation = config.noAliasPropagation;
 	let noCamelCase        = config.noCamelCase;
 	let ignoreEquals       = config.ignoreEquals;
-	let multipleOptions    = config.multipleOptions || "use-last";
+	let duplicates         = config.duplicates || "use-last";
 	
 	
 	let shortNames   = {};
@@ -205,7 +205,7 @@ function getOpts(input, optdef, config){
 	let resolveDuplicate = (option, name, value) => {
 		let arrayify = input => Array.isArray(input) ? input : [input];
 		
-		switch(multipleOptions){
+		switch(duplicates){
 			
 			/** Use the first value (or set of values); discard any following duplicates */
 			case "use-first":{
@@ -438,7 +438,7 @@ function getOpts(input, optdef, config){
 	
 	
 	/** If we're handling duplicate options with "limit-last", flip the input order */
-	if("limit-last" === multipleOptions)
+	if("limit-last" === duplicates)
 		input = flip(input);
 	
 	
@@ -493,7 +493,7 @@ function getOpts(input, optdef, config){
 	
 	
 	/** Check if we need to flip the returned .argv array back into the right order again */
-	if("limit-last" === multipleOptions)
+	if("limit-last" === duplicates)
 		result.argv = flip(result.argv);
 		
 	return result;
