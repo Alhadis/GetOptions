@@ -11,7 +11,7 @@ The JavaScript equivalent of `getopts`. No frills, no bullshit; nothing but cold
 
 This lets you extract options so this...
 
-<pre><code>$ program <b><ins>--log-path</ins> <ins>/var/log/stuff.txt</ins></b> generate all-files <b><ins>--verbose</ins></b></code></pre>
+<pre><code>$ program <b>--log-path <ins>/var/log/stuff.txt</ins></b> generate all-files <b><ins>--verbose</ins></b></code></pre>
 
 
 ... gets filtered down to this:
@@ -68,7 +68,7 @@ The value that's assigned to each corresponding `.options` property is either:
 
 Given the earlier example, the following line...
 
-<code>program <b>--files <kbd>/search/path</kbd> <kbd>1.jpg</kbd> <kbd>2.txt</kbd> <kbd>3.gif</kbd></b> <b>--log-path <kbd>/path/to/</kbd></b> subcommand param <b>--verbose</b></code>
+<pre><code>program <b>--files <ins>/search/path</ins> <ins>1.jpg</ins> <ins>2.txt</ins> <ins>3.gif</ins></b> <b>--log-path <ins>/path/to/</ins></b> subcommand param <b>--verbose</b></code></pre>
 
 ... would yield:
 ```js
@@ -116,18 +116,16 @@ Further reading
 I've broken the more convoluted documentation into different files, in an effort to keep this readme file terse:
 
 * **[Advanced Options](docs/advanced-settings.md):** Covers additional features not detailed here
-* **[Bundling](docs/bundling.md):** Describes how `getOpts` parses bundled short-options like `-alma`
+* **[Bundling](docs/bundling.md):** Describes how `getOpts` parses bundled short-options like `-cyfaws`
 
 
 
 Reminders
 ---------
-* This is pure JavaScript, so it's not reliant on Node to work. Feel free to use it in a browser environment or whatever.
+* This is pure JavaScript, so it's not reliant on Node to work. Feel free to use it in a browser environment or whatever.<br/><br/>
 * The array that's passed to the function isn't modified. If you want to overwrite the values stored in `process.argv`, do so by assignment:
-```js
-process.argv = result.argv;
-```
-This is by design. It's not reasonable to assume developers will expect the contents of the array to be automatically shifted as options are being plucked from it.
+  <pre><code>process.argv = result.argv;</code></pre>
+  This is by design. It's not reasonable to assume developers will expect the contents of the array to be automatically shifted as options are being plucked from it.<br/><br/>
 * As you'd expect, the first two values in `process.argv` contain the paths of the Node executable and the currently-running script.
   These have been omitted from the examples documented here (perhaps misleadingly, but done so for brevity's sake).
   In production, you'd probably want to pass `process.argv.slice(2)` to `getOpts` or something.
