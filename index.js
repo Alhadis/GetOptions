@@ -350,7 +350,7 @@ function getOpts(input, optdef, config){
 		let optValue = currentOption.values;
 		
 		/** Don't store solitary values in an array. Store them directly as strings */
-		if(currentOption.arity === 1)
+		if(currentOption.arity === 1 && !currentOption.variadic)
 			optValue = optValue[0];
 
 		setValue(currentOption, optValue);

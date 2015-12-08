@@ -94,4 +94,39 @@ describe("Basic usage", function(){
 		
 	});
 	
+	
+	
+	it("Parse variadic options", function(){
+		
+		let tests  = [{
+			input: "-f one two three four five",
+			expected: {
+				options: {
+					files: ["one", "two", "three", "four", "five"]
+				},
+				argv: []
+			}
+		}, {
+			input: "-f one two three 4 5 -lA3 uno dos tres cuatro -n Ajaja",
+			expected: {
+				options: {
+					files: ["one", "two", "three", "4", "5"],
+					list:  ["A", "3", "uno", "dos", "tres", "cuatro"],
+					name:  "Ajaja"
+				},
+				argv: []
+			}
+		}];
+		
+		for(let i of tests){
+			let result = getOpts(i.input.split(/\s+/g), {
+				"-f, --files":  "<list...>",
+				"-l, --list":   "<letter=[A-Za-z]> <integer=\\d+> <mystery...>",
+				"-n, --name":   "<name>"
+			}, {noAliasPropagation: "first-only"});
+			
+			assert.deepEqual(result, i.expected);
+		}
+	});
+	
 });
