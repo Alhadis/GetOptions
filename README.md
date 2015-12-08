@@ -122,6 +122,7 @@ I've broken the more convoluted documentation into different files, in an effort
 
 Reminders
 ---------
+* No typecasting is performed on user input. Values will *always* be stored as strings.<br/><br/>
 * This is pure JavaScript, so it's not reliant on Node to work. Feel free to use it in a browser environment or whatever.<br/><br/>
 * The array that's passed to the function isn't modified. If you want to overwrite the values stored in `process.argv`, do so by assignment:
   <pre><code>process.argv = result.argv;</code></pre>
