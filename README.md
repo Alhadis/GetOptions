@@ -6,21 +6,30 @@ The JavaScript equivalent of `getopts`. No frills, no bullshit; nothing but cold
 **Use this module if you**
 * Are happy validating and type-checking input yourself
 * Don't mind writing your own documentation
-* Are just interested in lifting options so that this...  
-<code>$ program <b><ins>--log-path</ins> <ins>/var/log/stuff.txt</ins></b> generate all-files <b><ins>--verbose</ins></b></code>  
-<br/>... gets filtered like this:  
-<code>$ program generate all-files</code>  
-<br/>... with all the helpful stuff sorted neatly in one little object:
+* Prefer a hands-on approach without pointless array-fiddling
+
+
+This lets you extract options so this...
+
+<pre><code>$ program <b><ins>--log-path</ins> <ins>/var/log/stuff.txt</ins></b> generate all-files <b><ins>--verbose</ins></b></code></pre>
+
+
+... gets filtered down to this:
+
+<pre><code>$ program generate all-files</code></pre>
+
+
+... with everything neatly sorted into one little object:
 ```js
 let result = {
-	options: {
-		logPath: "/var/log/stuff.txt",
-		verbose: true
-	},
-	argv: [
-		"generate",
-		"all-files"
-	]
+    options: {
+        logPath: "/var/log/stuff.txt",
+        verbose: true
+    },
+    argv: [
+        "generate",
+        "all-files"
+    ]
 };
 ```
 
@@ -32,17 +41,17 @@ Example
 
 ```js
 getOpts(process.argv, {
-	"-v, --verbose":    "",
-	"-l, --log-level":  "[level]",
-	"-p, --log-path":   "<path>",
-	"-s, --set-config": "<name> <value>",
-	"-f, --files":      "<search-path> <variadic-file-list...>"
+    "-v, --verbose":    "",
+    "-l, --log-level":  "[level]",
+    "-p, --log-path":   "<path>",
+    "-s, --set-config": "<name> <value>",
+    "-f, --files":      "<search-path> <variadic-file-list...>"
 });
 ```
 
 **Left column:**  
 Short and long forms of each defined option, separated by commas.
-	
+
 **Right column:**  
 Arguments each option takes, if any.
 
@@ -64,12 +73,12 @@ Given the earlier example, the following line...
 ... would yield:
 ```js
 let result = {
-	argv:    ["subcommand", "param"],
-	options: {
-		files:   ["/search/path", "1.jpg", "2.txt", "3.gif"],
-		logPath: "/path/to",
-		verbose: true
-	}
+    argv:    ["subcommand", "param"],
+    options: {
+        files:   ["/search/path", "1.jpg", "2.txt", "3.gif"],
+        logPath: "/path/to",
+        verbose: true
+    }
 };
 ```
 
@@ -83,9 +92,9 @@ That's it?
 Yeah, that's it. You want fancy subcommands? Just leverage the `.argv` property of the returned object:
 ```js
 let subcommands = {
-	generate: function(whichFiles){
-		console.log("Let's generate... " + whichFiles);
-	}
+    generate: function(whichFiles){
+        console.log("Let's generate... " + whichFiles);
+    }
 };
 
 subcommands[ result.argv[0] ].apply(null, result.argv.slice(1));
@@ -101,11 +110,20 @@ eval(result.argv[0]).apply(null, result.argv.slice(1));
 Obviously you'd be checking if the function existed and all that jazz. But that's up to you.
 
 
+Further reading
+---------------
 
-Notes
------
-* This is pure JavaScript, meaning it's not reliant on Node to work. Feel free to use it in a browser environment or whatever.
-* The array that's passed to the function isn't modified. If you want to overwrite the values stored in `process.argv`, you can do so by assignment:
+I've broken the more convoluted documentation into different files, in an effort to keep this readme file terse:
+
+* **[Advanced Options](docs/advanced-settings.md):** Covers additional features not detailed here
+* **[Bundling](docs/bundling.md):** Describes how `getOpts` parses bundled short-options like `-alma`
+
+
+
+Reminders
+---------
+* This is pure JavaScript, so it's not reliant on Node to work. Feel free to use it in a browser environment or whatever.
+* The array that's passed to the function isn't modified. If you want to overwrite the values stored in `process.argv`, do so by assignment:
 ```js
 process.argv = result.argv;
 ```
