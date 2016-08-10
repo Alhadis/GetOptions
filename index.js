@@ -250,6 +250,7 @@ function getOpts(input, optdef, config){
 	config                 = config || {};
 	let noAliasPropagation = config.noAliasPropagation;
 	let noCamelCase        = config.noCamelCase;
+	let noBundling         = config.noBundling;
 	let ignoreEquals       = config.ignoreEquals;
 	let duplicates         = config.duplicates || "use-last";
 	
@@ -473,7 +474,7 @@ function getOpts(input, optdef, config){
 	let nameKeys = Object.keys(shortNames);
 	let bundleMatch, bundlePatterns;
 	
-	if(nameKeys.length){
+	if(!noBundling && nameKeys.length){
 		bundlePatterns  = nameKeys.map(n => shortNames[n].getBundlePattern()).join("|");
 		bundleMatch     = new RegExp("^-("+bundlePatterns+")+", "g");
 		bundlePatterns  = new RegExp(bundlePatterns, "g");
@@ -488,31 +489,34 @@ function getOpts(input, optdef, config){
 		let legalNames = new RegExp("^(?:" + Object.keys(longNames).join("|") + ")=");
 		
 		for(let i = 0, l = input.length; i < l; ++i){
-			bundleMatch.lastIndex = 0;
-			let arg   = input[i];
+			let arg = input[i];
 			
-			/** Expand bundled option clusters ("-mvl2" -> "-m -v -l 2") */
-			if(bundleMatch.test(arg)){
-				let segments = arg.match(bundlePatterns).map(m => {
-					
-					/** Obtain a pointer to the original Option instance that defined this short-name */
-					let opt = shortNames["-"+m[0]];
-					
-					/** This option doesn't accept any arguments, so just keep it simple */
-					if(!opt.arity)
-						return ["-"+m[0]];
-					
-					let matches = m.match(new RegExp(opt.getBundlePattern())).slice(1).filter(i => i);
-					return ["-"+m[0], ...matches];
-				});
+			/** We have bundling in use */
+			if(bundleMatch){
+				bundleMatch.lastIndex = 0;
 				
-				segments = [].concat(...segments);
-				input.splice(i, 1, ...segments);
-				l =  input.length;
-				i += segments.length;
-				continue;
+				/** Expand bundled option clusters ("-mvl2" -> "-m -v -l 2") */
+				if(bundleMatch.test(arg)){
+					let segments = arg.match(bundlePatterns).map(m => {
+						
+						/** Obtain a pointer to the original Option instance that defined this short-name */
+						let opt = shortNames["-"+m[0]];
+						
+						/** This option doesn't accept any arguments, so just keep it simple */
+						if(!opt.arity)
+							return ["-"+m[0]];
+						
+						let matches = m.match(new RegExp(opt.getBundlePattern())).slice(1).filter(i => i);
+						return ["-"+m[0], ...matches];
+					});
+					
+					segments = [].concat(...segments);
+					input.splice(i, 1, ...segments);
+					l =  input.length;
+					i += segments.length;
+					continue;
+				}
 			}
-			
 			
 			/** Expand "--option=value" sequences to become "--option value" */
 			if(legalNames.test(arg)){
