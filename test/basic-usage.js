@@ -1,15 +1,13 @@
 "use strict";
 
-let getOpts = require("../index.js");
-let Chai    = require("chai");
-let assert  = Chai.assert;
-Chai.should();
+const getOpts = require("../index.js");
+const assert  = require("chai").assert;
 
 
-describe("Basic usage", function(){
+suite("Basic usage", function(){
 	
 	
-	it("Parse bundled short-options", function(){
+	test("Bundled short-options", function(){
 		
 		let tests  = [{
 			input: "-hvn2",
@@ -54,7 +52,7 @@ describe("Basic usage", function(){
 	
 	
 	
-	it("Maintain correct argument and option order", function(){
+	test("Argument and option order", function(){
 		
 		let tests  = [{
 			input: "-l 2 --set-size 640 480 -s alpha beta gamma",
@@ -96,7 +94,7 @@ describe("Basic usage", function(){
 	
 	
 	
-	it("Parse variadic options", function(){
+	test("Variadic options", function(){
 		
 		let tests  = [{
 			input: "-f one two three four five",

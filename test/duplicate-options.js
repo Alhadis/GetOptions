@@ -1,12 +1,10 @@
 "use strict";
 
-let getOpts = require("../index.js");
-let Chai    = require("chai");
-let assert  = Chai.assert;
-Chai.should();
+const getOpts = require("../index.js");
+const assert  = require("chai").assert;
 
 
-describe("Duplicate option handling", function(){
+suite("Duplicate option handling", function(){
 	let optdef = {"-a, --arg": "<numbers=\\d+>"};
 	let config = {
 		noAliasPropagation: "first-only",
@@ -14,7 +12,7 @@ describe("Duplicate option handling", function(){
 	};
 	
 	
-	it("Mode: use-first", function(){
+	test("Mode: use-first", function(){
 		
 		let tests  = [{
 			input: "--arg 1 alpha --arg 2 beta --arg 3 gamma --arg 4 delta",
@@ -39,7 +37,7 @@ describe("Duplicate option handling", function(){
 	});
 	
 	
-	it("Mode: use-last", function(){
+	test("Mode: use-last", function(){
 		config.duplicates = "use-last";
 		
 		let tests  = [{
@@ -65,7 +63,7 @@ describe("Duplicate option handling", function(){
 	});
 	
 	
-	it("Mode: limit-first", function(){
+	test("Mode: limit-first", function(){
 		config.duplicates = "limit-first";
 		
 		let tests  = [{
@@ -85,7 +83,7 @@ describe("Duplicate option handling", function(){
 	});
 	
 	
-	it("Mode: limit-last", function(){
+	test("Mode: limit-last", function(){
 		config.duplicates = "limit-last";
 		optdef = {"-s, --set-size": "<width=\\d+> <height=\\d+>"};
 		
@@ -106,7 +104,7 @@ describe("Duplicate option handling", function(){
 	});
 	
 
-	it("Mode: error", function(){
+	test("Mode: error", function(){
 		config.duplicates = "error";
 
 		let fn = () => {
@@ -119,7 +117,7 @@ describe("Duplicate option handling", function(){
 	});
 	
 	
-	it("Mode: append", function(){
+	test("Mode: append", function(){
 		config.duplicates = "append";
 		optdef = {"-s, --set-size": "<width=\\d+> <height=\\d+>"};
 		
@@ -140,7 +138,7 @@ describe("Duplicate option handling", function(){
 	});
 
 
-	it("Mode: stack", function(){
+	test("Mode: stack", function(){
 		config.duplicates = "stack";
 		optdef = {"-s, --set-size": "<width=\\d+> <height=\\d+>"};
 		
@@ -162,7 +160,7 @@ describe("Duplicate option handling", function(){
 	
 	
 	
-	it("Mode: stack-values", function(){
+	test("Mode: stack-values", function(){
 		config.duplicates = "stack-values";
 		optdef = {"-s, --set-size": "<width=\\d+> <height=\\d+>"};
 		
