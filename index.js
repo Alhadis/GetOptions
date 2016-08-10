@@ -155,7 +155,87 @@ function injectIntoArray(array, index, ...values){
 }
 
 
+/**
+ * Parse input using "best guess" logic. Called when no optdef is passed.
+ *
+ * Essentially, the following assumptions are made about input:
+ *
+ * - Anything beginning with at least one dash is an option name
+ * - Options without arguments mean a boolean "true"
+ * - Option-reading stops at "--"
+ * - Anything without a leading dash following an option name is its value
+ *
+ * @param {Array} input
+ * @return {Object} opts
+ */
+function autoOpts(input, config){
+	config = config || {};
+	const opts = new Object(null);
+	const argv = [];
+	let argvEnd;
+	
+	
+	/** Stop parsing anything after a "--" delimiter */
+	const stopAt = input.indexOf("--");
+	if(stopAt !== -1){
+		argvEnd = input.slice(stopAt + 1);
+		input = input.slice(0, stopAt);
+	}
+	
+	
+	for(let i = 0, l = input.length; i < l; ++i){
+		let name = input[i];
+		
+		/** Appears to be an option */
+		if(/^-/.test(name)){
+			
+			/** Equals sign is used, should it become the option's value? */
+			if(!config.ignoreEquals && /=/.test(name)){
+				name = name.split(/=/);
+				opts[name[0]] = name.slice(1).join("=");
+			}
+			
+			else{
+				/** Format name */
+				name = name.replace(/^-+/, "");
+				if(!config.noCamelCase && /-/.test(name))
+					name = kebabToCamelCase(name);
+				
+				/** Treat a following non-option as this option's value */
+				const next = input[i + 1];
+				if(next != null && !/^-/.test(next)){
+					opts[name] = next;
+					++i;
+				}
+				
+				/** Argumentless; assume it's meant to be a boolean-type option */
+				else opts[name] = true;
+			}
+		}
+		
+		/** Non-option: add to argv */
+		else argv.push(name);
+	}
+	
+	
+	/** Add any additional arguments that were found after a "--" delimiter */
+	if(argvEnd)
+		argv.push(...argvEnd);
+	
+	return {
+		options: opts,
+		argv:    argv
+	};
+}
+
+
+
 function getOpts(input, optdef, config){
+	
+	/** Take a different approach if optdefs aren't specified */
+	if(null == optdef)
+		return autoOpts(input, config);
+	
 
 	/** Optional options hash controlling option-creation */
 	config                 = config || {};
