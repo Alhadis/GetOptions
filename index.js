@@ -236,6 +236,15 @@ function getOpts(input, optdef, config){
 	if(null == optdef)
 		return autoOpts(input, config);
 	
+	
+	/** Allow "t:h:i:s" style of getopt usage */
+	if("[object String]" === Object.prototype.toString.call(optdef)){
+		const names = optdef.match(/[^\s:]:?/g);
+		optdef = {};
+		names.forEach(name => {
+			optdef["-"+name] = name.length > 1 ? "<arg>" : "";
+		});
+	}
 
 	/** Optional options hash controlling option-creation */
 	config                 = config || {};
