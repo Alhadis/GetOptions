@@ -125,15 +125,22 @@ class Option{
 
 
 /**
- * Convert a kebab-cased-string into a camelCasedString.
+ * Strip leading dashes from an option name and convert it to camelCase.
  *
- * @param {String} input
- * @return {String}
+ * @param {String} input - An option's name, such as "--write-to"
+ * @param {Boolean} noCamelCase - Strip leading dashes only
+ * @return {String} name
  */
-function kebabToCamelCase(input){
-	return input.toLowerCase().replace(/([a-z])-+([a-z])/g, function(match, a, b){
-		return a + b.toUpperCase();
-	});
+function formatName(input, noCamelCase){
+	input = input.replace(/^-+/, "");
+	
+	/** Convert kebab-case into camelCase */
+	if(!noCamelCase && /-/.test(input))
+		input = input.toLowerCase().replace(/([a-z])-+([a-z])/g, function(_, a, b){
+			return a + b.toUpperCase();
+		});
+	
+	return input;
 }
 
 
@@ -191,21 +198,30 @@ function autoOpts(input, config){
 			
 			/** Equals sign is used, should it become the option's value? */
 			if(!config.ignoreEquals && /=/.test(name)){
-				name = name.split(/=/);
-				opts[name[0]] = name.slice(1).join("=");
+				let split  = name.split(/=/);
+				name       = formatName(split[0], config.noCamelCase);
+				opts[name] = split.slice(1).join("=");
 			}
 			
 			else{
-				/** Format name */
-				name = name.replace(/^-+/, "");
-				if(!config.noCamelCase && /-/.test(name))
-					name = kebabToCamelCase(name);
+				name = formatName(name, config.noCamelCase);
 				
 				/** Treat a following non-option as this option's value */
 				const next = input[i + 1];
 				if(next != null && !/^-/.test(next)){
-					opts[name] = next;
-					++i;
+					
+					/** There's another option after this one: collect multiple non-options as an array */
+					let nextOpt = input.findIndex((s,I) => I > i && /^-/.test(s));
+					if(nextOpt !== -1){
+						opts[name] = input.slice(i + 1, nextOpt);
+						i = nextOpt - 1;
+					}
+					
+					/** We're at the last option: don't take more than one item from argv */
+					else{
+						opts[name] = next;
+						++i;
+					}
 				}
 				
 				/** Argumentless; assume it's meant to be a boolean-type option */
@@ -399,8 +415,7 @@ function getOpts(input, optdef, config){
 				name = option.longNames[0] || option.shortNames[0];
 			
 			/** camelCase? */
-			if(!noCamelCase && /-/.test(name))
-				name = kebabToCamelCase(name);
+			name = formatName(name, noCamelCase);
 			
 			
 			/** This option's already been set before */
@@ -426,8 +441,7 @@ function getOpts(input, optdef, config){
 			option.names.forEach(name => {
 				
 				/** Decide whether to camelCase this option name */
-				if(!noCamelCase && /-/.test(name))
-					name = kebabToCamelCase(name);
+				name = formatName(name, noCamelCase);
 				
 				result.options[name] = value;
 			});

@@ -127,4 +127,35 @@ suite("Basic usage", function(){
 		}
 	});
 	
+	
+	
+	test("Anonymous options", function(){
+		
+		let tests = [{
+			input: "--something --size 640 480 --yea=nah unknown",
+			expected: {
+				options: {
+					something: true,
+					size: ["640", "480"],
+					yea: "nah"
+				},
+				argv: ["unknown"]
+			}
+		},{
+			input: "--something --size=640 480 --yea nah unknown",
+			expected: {
+				options: {
+					something: true,
+					size: "640",
+					yea: "nah"
+				},
+				argv: ["480", "unknown"]
+			}
+		}];
+
+		for(let i of tests){
+			let result = getOpts(i.input.split(/\s+/g));
+			assert.deepEqual(result, i.expected);
+		}
+	});
 });
