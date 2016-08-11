@@ -163,6 +163,20 @@ function injectIntoArray(array, index, ...values){
 
 
 /**
+ * Filter duplicate strings from an array.
+ *
+ * @param {Array} input - An array of strings
+ * @return {Array} unique
+ */
+function uniqueStrings(input){
+	const output = {};
+	for(let i = 0, l = input.length; i < l; ++i)
+		output[input[i]] = true;
+	return Object.keys(output);
+}
+
+
+/**
  * Parse input using "best guess" logic. Called when no optdef is passed.
  *
  * Essentially, the following assumptions are made about input:
@@ -486,11 +500,13 @@ function getOpts(input, optdef, config){
 	
 	/** Tackle bundling: make sure there's at least one option with a short name to work with */
 	let nameKeys = Object.keys(shortNames);
-	let bundleMatch, bundlePatterns;
+	let bundleMatch, bundlePatterns, niladicArgs;
 	
 	if(!noBundling && nameKeys.length){
-		bundlePatterns  = nameKeys.map(n => shortNames[n].getBundlePattern()).join("|");
+		bundlePatterns  = uniqueStrings(nameKeys.map(n => shortNames[n].getBundlePattern())).join("|");
 		bundleMatch     = new RegExp("^-("+bundlePatterns+")+", "g");
+		niladicArgs     = uniqueStrings(nameKeys.filter(n => !shortNames[n].arity).map(n => shortNames[n].getBundlePattern())).join("|");
+		niladicArgs     = new RegExp("^(-(?:" + niladicArgs + ")+)((?!" + bundlePatterns + ")\\S+)");
 		bundlePatterns  = new RegExp(bundlePatterns, "g");
 	}
 	
@@ -511,6 +527,16 @@ function getOpts(input, optdef, config){
 				
 				/** Expand bundled option clusters ("-mvl2" -> "-m -v -l 2") */
 				if(bundleMatch.test(arg)){
+					
+					/** Break off arguments that're attached to niladic options */
+					const niladicMatch = arg.match(niladicArgs);
+					if(niladicMatch){
+						niladicArgs.lastIndex = 0;
+						arg = niladicMatch[1];
+						input.splice(i+1, 0, niladicMatch[2]);
+						l = input.length;
+					}
+					
 					let segments = arg.match(bundlePatterns).map(m => {
 						
 						/** Obtain a pointer to the original Option instance that defined this short-name */

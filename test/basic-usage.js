@@ -144,6 +144,41 @@ suite("Basic usage", function(){
 	});
 	
 	
+	test("Niladic bundles", function(){
+		let tests = [{
+			input: "-ab0c",
+			expected: {
+				argv: ["0c"],
+				options: {
+					a: true,
+					b: true
+				}
+			}
+		},{
+			input: "-a0 -cda0",
+			expected: {
+				argv: ["0"],
+				options: {
+					a: true,
+					c: true,
+					d: "a0"
+				}
+			}
+		}];
+		
+		for(let i of tests){
+			let result = getOpts(i.input.split(/\s+/g), {
+				"-a": "",
+				"-b": "",
+				"-c": "",
+				"-d": "<arg>"
+			}, {noAliasPropagation: "first-only"});
+			assert.deepEqual(result, i.expected);
+		}
+	});
+	
+	
+	
 	test("Variadic options", function(){
 		
 		let tests  = [{
