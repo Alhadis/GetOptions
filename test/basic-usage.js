@@ -31,6 +31,16 @@ suite("Basic usage", function(){
 				},
 				argv: []
 			}
+		}, {
+			input: "-mvl2",
+			expected: {
+				argv: [],
+				options: {
+					messages: true,
+					version: true,
+					level: "2"
+				}
+			}
 		}];
 		
 		for(let i of tests){
@@ -48,6 +58,25 @@ suite("Basic usage", function(){
 			
 			assert.deepEqual(result, i.expected);
 		}
+		
+		
+		let result = getOpts(["-c0", "-u0"], {
+			"-m, --mutilate":        "<bool>",
+			"-u, --underline-urls":  "<bool>",
+			"-i, --indent":          "<string>",
+			"-c, --colour, --colours, --colourise": "<bool>"
+		});
+		assert.deepEqual(result, {
+			argv: [],
+			options: {
+				c: "0",
+				colour: "0",
+				colours: "0",
+				colourise: "0",
+				u: "0",
+				underlineUrls: "0"
+			}
+		});
 	});
 	
 	
@@ -92,6 +121,27 @@ suite("Basic usage", function(){
 		
 	});
 	
+	
+	test("Equals-sign assignment", function(){
+		let tests = [{
+			input: "--width=320 --config=/path/to/some/file",
+			expected: {
+				options: {
+					width: "320",
+					config: "/path/to/some/file"
+				},
+				argv: []
+			}
+		}];
+		
+		for(let i of tests){
+			let result = getOpts(i.input.split(/\s+/g), {
+				"-w, --width": "<number>",
+				"-c, --config": "<string>"
+			}, {noAliasPropagation: "first-only"});
+			assert.deepEqual(result, i.expected);
+		}
+	});
 	
 	
 	test("Variadic options", function(){
@@ -155,6 +205,63 @@ suite("Basic usage", function(){
 
 		for(let i of tests){
 			let result = getOpts(i.input.split(/\s+/g));
+			assert.deepEqual(result, i.expected);
+		}
+	});
+	
+	
+	
+	test("Shell-style definitions", function(){
+		
+		let tests = [{
+			input: ["abc", "-a -b -c"],
+			expected: {
+				argv: [],
+				options: {
+					a: true,
+					b: true,
+					c: true
+				}
+			}
+		},{
+			input: ["a:b:c:", "-a1 -b2 -c3"],
+			expected: {
+				argv: [],
+				options: {
+					a: "1",
+					b: "2",
+					c: "3"
+				}
+			}
+		},{
+			input: ["ab:c:de:f:", "-abc -c1 -d -ef"],
+			expected: {
+				argv: [],
+				options: {
+					a: true,
+					b: "c",
+					c: "1",
+					d: true,
+					e: "f"
+				}
+			}
+		},{
+			input: ["abc d:e2: f1:", "-a1b -bd2 -c2a"],
+			expected: {
+				argv: [],
+				options: {
+					a: true,
+					b: true,
+					d: "2",
+					c: true,
+					2: "a",
+					1: "b"
+				}
+			}
+		}];
+		
+		for(let i of tests){
+			let result = getOpts(i.input[1].split(/\s+/g), i.input[0]);
 			assert.deepEqual(result, i.expected);
 		}
 	});

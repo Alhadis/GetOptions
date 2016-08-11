@@ -258,7 +258,7 @@ function getOpts(input, optdef, config){
 		const names = optdef.match(/[^\s:]:?/g);
 		optdef = {};
 		names.forEach(name => {
-			optdef["-"+name] = name.length > 1 ? "<arg>" : "";
+			optdef["-"+name.replace(/:/, "")] = name.length > 1 ? "<arg>" : "";
 		});
 	}
 
@@ -527,7 +527,7 @@ function getOpts(input, optdef, config){
 					segments = [].concat(...segments);
 					input.splice(i, 1, ...segments);
 					l =  input.length;
-					i += segments.length;
+					i += segments.length - 1;
 					continue;
 				}
 			}
@@ -537,7 +537,7 @@ function getOpts(input, optdef, config){
 				let match = arg.match(/^([^=]+)=(.+)$/);
 				input.splice(i, 1, match[1], match[2]);
 				l =  input.length;
-				i += 2;
+				i += 1;
 				continue;
 			}
 		}
