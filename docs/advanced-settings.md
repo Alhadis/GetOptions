@@ -10,6 +10,7 @@ The supported settings and their default values are:
     <a href="#duplicates">duplicates</a>:          "use-last",
     <a href="#ignoreequals">ignoreEquals</a>:        false,
     <a href="#noaliaspropagation">noAliasPropagation</a>:  false,
+    <a href="#nobundling">noBundling</a>:          false,
     <a href="#nocamelcase">noCamelCase</a>:         false
 });</code></pre>
 
@@ -164,6 +165,22 @@ If an option doesn't have any --long-names, the first short-name is simply used 
      $  program  -u
     ->  options: {h: true}
 
+
+
+
+noBundling
+----------
+
+Disables [option-bundling](./bundling.md) for developers who'd rather turn it off.
+Note this doesn't mean it's possible to specify long-names using single-dashes:
+
+     #  getOpts( argv, {"-tag": "<name>"} )
+    
+     $  program  -tag name
+    ->  options: {}
+    ->  argv:    ["-tag", "name"]
+
+Currently, two dashes are needed to indicate a long-name. That'll be fixed in a future release.
 
 
 
