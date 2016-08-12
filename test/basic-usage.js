@@ -219,49 +219,49 @@ suite("Basic usage", function(){
 		let tests = [{
 			input: "--something --size 640 480 --yea=nah unknown",
 			expected: {
+				argv: ["unknown"],
 				options: {
 					something: true,
 					size: ["640", "480"],
 					yea: "nah"
-				},
-				argv: ["unknown"]
+				}
 			}
 		},{
 			input: "--something --size=640 480 --yea nah unknown",
 			expected: {
+				argv: ["480", "nah", "unknown"],
 				options: {
 					something: true,
 					size: "640",
-					yea: "nah"
-				},
-				argv: ["480", "unknown"]
+					yea: true
+				}
 			}
 		},{
-			input: "--path /to/some/file --verbose -q=1 argv1 argv2",
+			input: "--path /to/some/file --verbose -q argv1 argv2",
 			expected: {
 				argv: ["argv1", "argv2"],
 				options: {
 					path: "/to/some/file",
 					verbose: true,
-					q: "1"
+					q: true
 				}
 			}
 		},{
-			input: "--path /to/some/file /and/some/other/file --verbose true",
+			input: "--path /to/some/file /and/some/other/file --verbose",
 			expected: {
 				argv: [],
 				options: {
 					path: ["/to/some/file", "/and/some/other/file"],
-					verbose: "true"
+					verbose: true
 				}
 			}
 		},{
 			input: "one two three --path /to/some/file /and/another/file /and/yet/another --files everywhere man",
 			expected: {
-				argv: ["one", "two", "three", "man"],
+				argv: ["one", "two", "three", "everywhere", "man"],
 				options: {
 					path: ["/to/some/file", "/and/another/file", "/and/yet/another"],
-					files: "everywhere"
+					files: true
 				}
 			}
 		},{

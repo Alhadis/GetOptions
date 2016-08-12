@@ -184,7 +184,7 @@ function uniqueStrings(input){
  * - Anything beginning with at least one dash is an option name
  * - Options without arguments mean a boolean "true"
  * - Option-reading stops at "--"
- * - Anything without a leading dash following an option name is its value
+ * - Anything caught between two options becomes the first option's value
  *
  * @param {Array} input
  * @return {Object} opts
@@ -236,11 +236,8 @@ function autoOpts(input, config){
 						i = nextOpt - 1;
 					}
 					
-					/** We're at the last option: don't take more than one item from argv */
-					else{
-						opts[name] = next;
-						++i;
-					}
+					/** We're at the last option. Play it safe, don't touch argv, and assume this is a boolean */
+					else opts[name] = true;
 				}
 				
 				/** Argumentless; assume it's meant to be a boolean-type option */
