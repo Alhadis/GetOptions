@@ -228,6 +228,11 @@ function autoOpts(input, config){
 					let nextOpt = input.findIndex((s,I) => I > i && /^-/.test(s));
 					if(nextOpt !== -1){
 						opts[name] = input.slice(i + 1, nextOpt);
+						
+						/** There's only one value to store; don't wrap it in an array */
+						if(nextOpt - i < 3)
+							opts[name] = opts[name][0];
+						
 						i = nextOpt - 1;
 					}
 					

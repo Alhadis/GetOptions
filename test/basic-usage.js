@@ -236,6 +236,44 @@ suite("Basic usage", function(){
 				},
 				argv: ["480", "unknown"]
 			}
+		},{
+			input: "--path /to/some/file --verbose -q=1 argv1 argv2",
+			expected: {
+				argv: ["argv1", "argv2"],
+				options: {
+					path: "/to/some/file",
+					verbose: true,
+					q: "1"
+				}
+			}
+		},{
+			input: "--path /to/some/file /and/some/other/file --verbose true",
+			expected: {
+				argv: [],
+				options: {
+					path: ["/to/some/file", "/and/some/other/file"],
+					verbose: "true"
+				}
+			}
+		},{
+			input: "one two three --path /to/some/file /and/another/file /and/yet/another --files everywhere man",
+			expected: {
+				argv: ["one", "two", "three", "man"],
+				options: {
+					path: ["/to/some/file", "/and/another/file", "/and/yet/another"],
+					files: "everywhere"
+				}
+			}
+		},{
+			input: "1-one 2-two 3-three 4-four --path=/to/some file --verbose -log=log.txt argv1 argv2",
+			expected: {
+				argv: ["1-one", "2-two", "3-three", "4-four", "file", "argv1", "argv2"],
+				options: {
+					path: "/to/some",
+					verbose: true,
+					log: "log.txt"
+				}
+			}
 		}];
 
 		for(let i of tests){
