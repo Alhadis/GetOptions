@@ -57,6 +57,16 @@ Arguments each option takes, if any.
 
 Note: There's no requirement to enclose each parameter's name with `< > [ ] ( )`. These characters are just permitted for readability, and are ignored by the function when it runs. They're allowed because some authors might find them easier on the eyes than simple space-separation.
 
+**When omitted:**  
+If you don't define any options, the function takes a "best guess" approach by absorbing anything with a dash in front of it. Specifically, the following assumptions are made:
+
+* Anything beginning with at least one dash is an option name
+* Options without arguments mean a boolean `true`
+* Option-reading stops at `--`
+* Anything caught between two options becomes the first option's value
+
+Don't rely on this approach to give you foolproof results. Read about the caveats [here](docs/anonymous-options.md).
+
 
 Result
 ------
@@ -115,7 +125,8 @@ Further reading
 
 I've broken the more convoluted documentation into different files, in an effort to keep this readme file terse:
 
-* **[Advanced Options](docs/advanced-settings.md):** Covers additional features not detailed here
+* **[Advanced settings](docs/advanced-settings.md):** Covers additional features not detailed here
+* **[Anonymous options](docs/anonymous-options.md):** What happens if you don't define any options
 * **[Bundling](docs/bundling.md):** Describes how `getOpts` parses bundled short-options like `-cyfaws`
 
 
