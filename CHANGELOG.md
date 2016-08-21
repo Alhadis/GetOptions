@@ -10,8 +10,9 @@ This project honours [Semantic Versioning](http://semver.org/).
 [v1.1.1]
 ------------------------------------------------------------------------
 **August 21st, 2016**  
-Housekeeping release to optimise module distribution.
+Housekeeping release to optimise module distribution and fix minor bugs.
 
+* __Fixed:__ Exceptions thrown when passing blank arguments
 * __Fixed:__ Main file shouldn't include hashbang or be executable
 * __Fixed:__ Unnecessary files included with NPM downloads
 

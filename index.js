@@ -194,6 +194,8 @@ function autoOpts(input, config){
 	const argv = [];
 	let argvEnd;
 	
+	/** Bail early if passed a blank string */
+	if(!input) return opts;
 	
 	/** Stop parsing anything after a "--" delimiter */
 	const stopAt = input.indexOf("--");
@@ -263,8 +265,12 @@ function autoOpts(input, config){
 
 function getOpts(input, optdef, config){
 	
+	/** Do nothing if given nothing */
+	if(!input || input.length === 0)
+		return {options: {}, argv: []};
+	
 	/** Take a different approach if optdefs aren't specified */
-	if(null == optdef)
+	if(null == optdef || "" === optdef || false === optdef)
 		return autoOpts(input, config);
 	
 	

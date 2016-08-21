@@ -280,6 +280,18 @@ suite("Basic usage", function(){
 			let result = getOpts(i.input.split(/\s+/g));
 			assert.deepEqual(result, i.expected);
 		}
+		
+		
+		let input = "--not-camel-cased --file-name output.log --verbose-logging";
+		let result = getOpts(input.split(/\s+/g), false, {noCamelCase: true});
+		assert.deepEqual(result, {
+			argv: [],
+			options: {
+				"not-camel-cased": true,
+				"file-name": "output.log",
+				"verbose-logging": true
+			}
+		});
 	});
 	
 	
