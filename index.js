@@ -1,4 +1,3 @@
-#!/usr/local/bin/node --es_staging
 "use strict";
 
 

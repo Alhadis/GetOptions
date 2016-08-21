@@ -10,7 +10,10 @@ This project honours [Semantic Versioning](http://semver.org/).
 [v1.1.1]
 ------------------------------------------------------------------------
 **August 21st, 2016**  
-Reduced module's size by excluding unnecessary files from distribution.
+Housekeeping release to optimise module distribution.
+
+* __Fixed:__ Main file shouldn't include hashbang or be executable
+* __Fixed:__ Unnecessary files included with NPM downloads
 
 
 [v1.1.0]
