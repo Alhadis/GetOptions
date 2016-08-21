@@ -6,6 +6,7 @@
 	"repository": "https://github.com/Alhadis/GetOptions",
 	"license": "ISC",
 	"engines": { "node": ">=5.0.0" },
+	"files": ["index.js"],
 	"dependencies": {},
 	"devDependencies": {
 		"mocha": "*",

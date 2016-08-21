@@ -7,6 +7,12 @@ be found by digging through the commit logs.
 This project honours [Semantic Versioning](http://semver.org/).
 
 
+[v1.1.1]
+------------------------------------------------------------------------
+**August 21st, 2016**  
+Reduced module's size by excluding unnecessary files from distribution.
+
+
 [v1.1.0]
 ------------------------------------------------------------------------
 **August 12th, 2016**  
@@ -38,6 +44,7 @@ Initial release.
 
 
 [Referenced links]:_____________________________________________________
+[v1.1.1]: https://github.com/Alhadis/GetOptions/releases/tag/v1.1.1
 [v1.1.0]: https://github.com/Alhadis/GetOptions/releases/tag/v1.1.0
 [v1.0.1]: https://github.com/Alhadis/GetOptions/releases/tag/v1.0.1
 [v1.0.0]: https://github.com/Alhadis/GetOptions/releases/tag/v1.0.0
