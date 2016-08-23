@@ -9,7 +9,7 @@ This project honours [Semantic Versioning](http://semver.org/).
 
 [v1.1.1]
 ------------------------------------------------------------------------
-**August 21st, 2016**  
+**August 24th, 2016**  
 Housekeeping release to optimise module distribution and fix minor bugs.
 
 * __Fixed:__ Exceptions thrown when passing blank arguments
