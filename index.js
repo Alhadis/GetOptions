@@ -1,98 +1,100 @@
 "use strict";
 
-
+/**
+ * Class used internally to represent individual options.
+ * @internal
+ */
 class Option{
 	
 	/**
 	 * Create a new Option instance.
 	 *
-	 * @param {String|Array} names  - Comma-separated list of names (e.g., "-l, --long-list, --length")
-	 * @param {String}       params - List of args the option expects (e.g., "<num> <type>" or "[num] [type]", etc)
+	 * @param {String|Array} names - Comma-separated list of names.
+	 * @param {String|Array} params - Arguments which the option expects.
+	 * @example new Option("-l, --long-list, --length", "<num> <type>")
+	 * @example new Option("-e, --exec", "[num] [type]")
 	 * @constructor
 	 */
-	constructor(names, params){
-		let shortNames = {};
-		let longNames  = {};
+	constructor(names, params = ""){
+		this.shortNames = [];
+		this.longNames  = [];
+		this.params     = [];
+		this.values     = [];
 		
-		/** Define the Option's names, both long and short forms */
-		if(!Array.isArray(names))
-			names = (""+names).split(/,/g);
+		this.defineNames(names);
+		this.defineParams(params);
+	}
+	
+	
+	/**
+	 * Describe the names used to refer to this option.
+	 * 
+	 * @param {String|Array} input
+	 * @internal
+	 */
+	defineNames(input){
+		if(!Array.isArray(input))
+			input = ("" + input).split(/,/g);
 		
-		let match;
-		for(let i of names){
-			i = i.trim();
-			
-			/** Short option */
-			if(match = i.match(/^-(\w)$/))
-				shortNames[match[1]] = true;
-			
-			/** Long option */
-			else longNames[i.replace(/^-+/, "")] = true;
-		}
-		
-		this.shortNames  = Object.keys(shortNames);
-		this.longNames   = Object.keys(longNames);
-		
-		
-		
-		/** Parameters accepted/expected by this Option */
-		if(Array.isArray(params))
-			params = params.join(" ");
-		
-		/** Split our parameter list by whitespace */
-		params = params.split(/\s+/g);
-		
-		/** Remove punctuation added for readability */
-		params = params.map(e => e.replace(/^<(.+?)>$|^\[(.+?)\]$|^\((.+?)\)$/gm, function(){
-			return [].slice.call(arguments, 1, 4).filter(e => e).join("");
-		}));
-		
-		
-		this.params = [];
-		this.values = [];
-		for(let name of params){
-			
-			/** Make sure the parameter isn't blank */
-			if(name){
-				
-				/** Check for an additional regex pattern to use for disambiguating bundled options */
-				let splitName = name.match(/^([^=]+)(?:=(.+)?)?$/);
-				
-				this.params.push({
-					name:      splitName[1],
-					pattern:   splitName[2] || ".+"
-				});
-				
-				if(/\.{3}$/.test(name))
-					this.variadic = true;
-			}
+		for(let name of input){
+			name = name.trim();
+			/^-([^\s\-])$/.test(name)
+				? this.shortNames.push(RegExp.lastParen)
+				: this.longNames.push(name.replace(/^-+/, ""));
 		}
 	}
 	
 	
 	/**
-	 * Return a regex string for matching this option when expressed in bundled short-form.
+	 * Describe the parameters this option accepts/expects.
 	 *
+	 * @param {String|Array} input
+	 * @internal
+	 */
+	defineParams(input){
+		input = Array.isArray(input)
+			? input.filter(Boolean).join(" ")
+			: String(input).trim().split(/\s+/g);
+		
+		// Strip any enclosing brackets added for readability
+		input = input.map(param => param.replace(/^<(.+?)>$|^\[(.+?)\]$|^\((.+?)\)$/gm, (...args) =>
+			args.slice(1, 4).filter(Boolean).join("")));
+		
+		for(const param of input){
+			if(!param) continue;
+			const [, name, pattern=".+"] = param.match(/^([^=]+)(?:=(.+)?)?$/);
+			this.params.push({name, pattern});
+			if(/\.{3}$/.test(name))
+				this.variadic = true;
+		}
+	}
+	
+	
+	/**
+	 * Pattern to match option when expressed in bundled short-form.
+	 *
+	 * @readonly
 	 * @return {String}
 	 */
-	getBundlePattern(){
+	get bundlePattern(){
 		
-		/** We've already generated this regex before; just return the cached result */
+		// Use a cached result if possible
 		if(this._bundlePattern)
 			return this._bundlePattern;
 		
-		let param = this.params.map(p => "("+p.pattern+")?").join("");
-		let names = this.shortNames.length === 1 ? this.shortNames[0] : ("[" + this.shortNames.join("") + "]");
+		const param = this.params.map(param => `(${param.pattern})?`).join("");
+		const names = this.shortNames.length === 1
+			? this.shortNames[0]
+			: `[${this.shortNames.join("")}]`;
 		return (this._bundlePattern = names + param);
 	}
 	
 	
-	
 	/**
-	 * Return the number of parameters this option expects/accepts.
+	 * Number of parameters this option expects/accepts.
 	 *
 	 * @readonly
-	 * @return {Number}
+	 * @property {Number}
 	 */
 	get arity(){
 		return this.params ? this.params.length : 0;
@@ -100,10 +102,10 @@ class Option{
 	
 	
 	/**
-	 * Return an array of all names this Option recognises, long or short.
+	 * Array of names recognised by the option, both long and short.
 	 *
 	 * @readonly
-	 * @return {Array}
+	 * @property {Array}
 	 */
 	get names(){
 		return this.shortNames.concat(this.longNames);
@@ -111,16 +113,30 @@ class Option{
 	
 	
 	/**
-	 * Whether or not the Option still has room for remaining parameters.
+	 * Whether the option can accept another parameter.
 	 *
 	 * @readonly
-	 * @return {Boolean}
+	 * @property {Boolean}
 	 */
 	get canCollect(){
-		return this.variadic || this.values.length < this.params.length;
+		return !!(this.variadic || this.values.length < this.params.length);
 	}
 }
 
+
+
+/**
+ * Box a value inside an {@link Array}, unless it already is one.
+ *
+ * @example arrayify(1)   => [1]
+ * @example arrayify([1]) => [1]
+ * @param {*} input
+ * @return {Array}
+ * @internal
+ */
+function arrayify(input){
+	return Array.isArray(input) ? input : [input];
+}
 
 
 /**
@@ -128,30 +144,30 @@ class Option{
  *
  * @param {String} input - An option's name, such as "--write-to"
  * @param {Boolean} noCamelCase - Strip leading dashes only
- * @return {String} name
+ * @return {String}
+ * @internal
  */
 function formatName(input, noCamelCase){
 	input = input.replace(/^-+/, "");
 	
-	/** Convert kebab-case into camelCase */
+	// Convert kebab-case to camelCase
 	if(!noCamelCase && /-/.test(input))
-		input = input.toLowerCase().replace(/([a-z])-+([a-z])/g, function(_, a, b){
-			return a + b.toUpperCase();
-		});
+		input = input.toLowerCase().replace(/([a-z])-+([a-z])/g, (_, a, b) => a + b.toUpperCase());
 	
 	return input;
 }
 
 
 /**
- * Inject one or more values into an array at an arbitrary position.
+ * Inject values into an array at an arbitrary position.
  *
- * This behaves similar to array.splice(index, 0, values...), except the
+ * This behaves similar to `array.splice(index, 0, values...)`, except the given
  * array is extended if the index is greater than the array's number of elements.
  *
  * @param {Array}  array - Array to operate upon. The value is modified.
  * @param {Number} index - Zero-based index of the array to inject the values into
- * @return {Array}         The modified array originally passed to the function
+ * @return {Array} Reference to the (now modified) array which was originally passed
+ * @internal
  */
 function injectIntoArray(array, index, ...values){
 	if(index > array.length)
@@ -164,8 +180,9 @@ function injectIntoArray(array, index, ...values){
 /**
  * Filter duplicate strings from an array.
  *
- * @param {Array} input - An array of strings
- * @return {Array} unique
+ * @param {String[]} input
+ * @return {Array}
+ * @internal
  */
 function uniqueStrings(input){
 	const output = {};
@@ -186,32 +203,32 @@ function uniqueStrings(input){
  * - Anything caught between two options becomes the first option's value
  *
  * @param {Array} input
- * @return {Object} opts
+ * @param {Object} [config={}]
+ * @return {Object}
+ * @internal
  */
-function autoOpts(input, config){
-	config = config || {};
+function autoOpts(input, config={}){
 	const opts = new Object(null);
 	const argv = [];
 	let argvEnd;
 	
-	/** Bail early if passed a blank string */
+	// Bail early if passed a blank string
 	if(!input) return opts;
 	
-	/** Stop parsing anything after a "--" delimiter */
+	// Stop parsing options after a double-dash
 	const stopAt = input.indexOf("--");
 	if(stopAt !== -1){
 		argvEnd = input.slice(stopAt + 1);
 		input = input.slice(0, stopAt);
 	}
 	
-	
 	for(let i = 0, l = input.length; i < l; ++i){
 		let name = input[i];
 		
-		/** Appears to be an option */
+		// Appears to be an option
 		if(/^-/.test(name)){
 			
-			/** Equals sign is used, should it become the option's value? */
+			// Equals sign is used, should it become the option's value?
 			if(!config.ignoreEquals && /=/.test(name)){
 				let split  = name.split(/=/);
 				name       = formatName(split[0], config.noCamelCase);
@@ -221,37 +238,37 @@ function autoOpts(input, config){
 			else{
 				name = formatName(name, config.noCamelCase);
 				
-				/** Treat a following non-option as this option's value */
+				// Treat a following non-option as this option's value
 				const next = input[i + 1];
 				if(next != null && !/^-/.test(next)){
 					
-					/** There's another option after this one: collect multiple non-options as an array */
+					// There's another option after this one. Collect multiple non-options into an array.
 					let nextOpt = input.findIndex((s,I) => I > i && /^-/.test(s));
 					if(nextOpt !== -1){
 						opts[name] = input.slice(i + 1, nextOpt);
 						
-						/** There's only one value to store; don't wrap it in an array */
+						// There's only one value to store; don't wrap it in an array
 						if(nextOpt - i < 3)
 							opts[name] = opts[name][0];
 						
 						i = nextOpt - 1;
 					}
 					
-					/** We're at the last option. Play it safe, don't touch argv, and assume this is a boolean */
+					// We're at the last option. Don't touch argv; assume it's a boolean-type option
 					else opts[name] = true;
 				}
 				
-				/** Argumentless; assume it's meant to be a boolean-type option */
+				// No arguments defined. Assume it's a boolean-type option.
 				else opts[name] = true;
 			}
 		}
 		
-		/** Non-option: add to argv */
+		// Non-option: add to argv
 		else argv.push(name);
 	}
 	
 	
-	/** Add any additional arguments that were found after a "--" delimiter */
+	// Add any additional arguments that were found after a "--" delimiter
 	if(argvEnd)
 		argv.push(...argvEnd);
 	
@@ -263,18 +280,25 @@ function autoOpts(input, config){
 
 
 
-function getOpts(input, optdef, config){
+/**
+ * Extract command-line options from a list of strings.
+ *
+ * @param {Array} input
+ * @param {String|Object} optdef
+ * @param {Object} [config={}]
+ */
+function getOpts(input, optdef, config = {}){
 	
-	/** Do nothing if given nothing */
+	// Do nothing if given nothing
 	if(!input || input.length === 0)
 		return {options: {}, argv: []};
 	
-	/** Take a different approach if optdefs aren't specified */
+	// Take a different approach if optdefs aren't specified
 	if(null == optdef || "" === optdef || false === optdef)
 		return autoOpts(input, config);
 	
 	
-	/** Allow "t:h:i:s" style of getopt usage */
+	// Allow "t:h:i:s" style of getopt usage
 	if("[object String]" === Object.prototype.toString.call(optdef)){
 		const names = optdef.match(/[^\s:]:?/g);
 		optdef = {};
@@ -283,133 +307,108 @@ function getOpts(input, optdef, config){
 		});
 	}
 
-	/** Optional options hash controlling option-creation */
-	config                 = config || {};
-	let noAliasPropagation = config.noAliasPropagation;
-	let noCamelCase        = config.noCamelCase;
-	let noBundling         = config.noBundling;
-	let ignoreEquals       = config.ignoreEquals;
-	let duplicates         = config.duplicates || "use-last";
+	// Parse settings that affect runtime option-handling
+	const {
+		noAliasPropagation,
+		noCamelCase,
+		noBundling,
+		ignoreEquals,
+		duplicates = "use-last",
+	} = config;
 	
-	
-	let shortNames   = {};
-	let longNames    = {};
-	let result       = {
-		options: new Object(null),
-		argv:    []
-	};
+	const shortNames = {};
+	const longNames = {};
+	const result = {argv: [], options: new Object(null)};
 
-	
-	/** Define the Options that the author's described in optdef */
-	for(let i in optdef){
-		let option = new Option(i, optdef[i]);
+	// Define each named option. Throw an error if a duplicate is found.
+	for(let name in optdef){
+		const option = new Option(name, optdef[name]);
 		
-		option.shortNames.forEach(n => {
-			
-			/** Don't allow duplicate option definitions */
-			if(shortNames[n] !== undefined)
-				throw new ReferenceError(`Short option "-${n}" already defined`);
-			
-			shortNames["-"+n] = option;
-		});
+		for(const name of option.shortNames){
+			if(undefined !== shortNames[name])
+				throw new ReferenceError(`Short option "-${name}" already defined`);
+			shortNames["-" + name] = option;
+		}
 		
-		option.longNames.forEach(n => {
-			
-			/** Again, don't allow duplicate option names; that obviously isn't what the author intended */
-			if(longNames[n] !== undefined)
-				throw new ReferenceError(`Long option "--${n}" already defined`);
-			
-			longNames["--"+n] = option;
-		});
+		for(const name of option.longNames){
+			if(undefined !== longNames[name])
+				throw new ReferenceError(`Long option "--${name}" already defined`);
+			longNames["--" + name] = option;
+		}
 	}
 	
-	
-	/** Pointer to the option that's currently picking up arguments */
+	// Pointer to the option that's currently picking up arguments
 	let currentOption;
 	
 	
-	/** Manages duplicated option values when needed */
-	let resolveDuplicate = (option, name, value) => {
-		let arrayify = input => Array.isArray(input) ? input : [input];
-		
+	// Manage duplicated option values
+	function resolveDuplicate(option, name, value){
 		switch(duplicates){
 			
-			/** Use the first value (or set of values); discard any following duplicates */
-			case "use-first":{
+			// Use the first value (or set of values); discard any following duplicates
+			case "use-first":
 				return result.options[name];
-				break;
-			}
 			
-			/** Use the last value (or set of values); discard any preceding duplicates. Default. */
-			case "use-last":
-			default:{
+			// Use the last value (or set of values); discard any preceding duplicates. Default.
+			case "use-last": default:
 				return result.options[name] = value;
-				break;
-			}
 			
-			/** Use the first/last options; treat any following/preceding duplicates as argv items respectively */
+			// Use the first/last options; treat any following/preceding duplicates as argv items respectively
 			case "limit-first":
-			case "limit-last":{
+			case "limit-last":
 				result.argv.push(option.prevMatchedName, ...arrayify(value));
 				break;
-			}
 			
-			
-			/** Chuck a hissy-fit if that's what the author wants */
-			case "error":{
+			// Throw an exception
+			case "error":
 				let error = new TypeError(`Attempting to reassign option "${name}" with value(s) ${JSON.stringify(value)}`);
 				error.affectedOption = option;
 				error.affectedValue  = value;
 				throw error;
 				break;
-			}
 			
-			
-			/** Add parameters of duplicate options to the argument list of the first */
-			case "append":{
-				let oldValues = arrayify(result.options[name]);
-				let newValues = arrayify(value);
-				
+			// Add parameters of duplicate options to the argument list of the first
+			case "append":
+				const oldValues = arrayify(result.options[name]);
+				const newValues = arrayify(value);
 				result.options[name] = oldValues.concat(newValues);
 				break;
-			}
 			
-			
-			/** Store the parameters of duplicated options in a multidimensional array */
+			// Store parameters of duplicated options in a multidimensional array
 			case "stack":{
 				let oldValues = result.options[name];
 				let newValues = arrayify(value);
 				
-				/** This option hasn't been "stacked" yet */
+				// This option hasn't been "stacked" yet
 				if(!option.stacked){
 					oldValues            = arrayify(oldValues);
 					result.options[name] = [oldValues, newValues];
 					option.stacked       = true;
 				}
 				
-				/** Already "stacked", so just shove the values onto the end of the array */
+				// Already "stacked", so just shove the values onto the end of the array
 				else result.options[name].push(arrayify(newValues));
 				
 				break;
 			}
 			
-			
-			/** Store each duplicated value in an array in the order they appear */
+			// Store each duplicated value in an array using the order they appear
 			case "stack-values":{
 				let values = result.options[name];
 				
-				/** First time "stacking" this option (nesting its value/s inside an array) */
+				// First time "stacking" this option (nesting its value/s inside an array)
 				if(!option.stacked){
-					let stack = [];
-					for(let i of arrayify(values))
-						stack.push([i]);
-					values         = stack;
+					const stack = [];
+					for(let value of arrayify(values))
+						stack.push([value]);
+					values = stack;
 					option.stacked = true;
 				}
 				
 				arrayify(value).forEach((v, i) => {
 					
-					/** An array hasn't been created at this index yet, because an earlier option wasn't given enough parameters */
+					// An array hasn't been created at this index yet,
+					// because an earlier option wasn't given enough parameters.
 					if(undefined === values[i])
 						values[i] = Array(values[0].length - 1);
 					
@@ -420,39 +419,34 @@ function getOpts(input, optdef, config){
 				break;
 			}
 		}
-	};
+	}
 	
 	
-	/** Assigns an option's parsed value to the returned object's .options property */
-	let setValue = (option, value) => {
+	// Assign an option's parsed value to the result's `.options` property
+	function setValue(option, value){
 		
-		
-		/** Assign the value only to the option name it matched */
+		// Assign the value only to the option name it matched
 		if(noAliasPropagation){
 			let name = option.lastMatchedName;
 			
-			/** Special alternative: in lieu of using the matched option name, use the first --long-name instead */
+			// Special alternative:
+			// In lieu of using the matched option name, use the first --long-name only
 			if("first-only" === noAliasPropagation)
 				name = option.longNames[0] || option.shortNames[0];
 			
-			/** camelCase? */
+			// camelCase?
 			name = formatName(name, noCamelCase);
 			
-			
-			/** This option's already been set before */
+			// This option's already been set before
 			if(result.options[name])
 				resolveDuplicate(option, name, value);
 			
 			else result.options[name] = value;
 		}
 		
-		
-		/** Copy across every alias this option's recognised by */
+		// Copy across every alias this option's recognised by
 		else{
-			
-			/** Store a pointer to the array that's generated from the Option's .names getter */
-			let names = option.names;
-			
+			const {names} = option;
 			
 			/** Ascertain if this option's being duplicated */
 			if(result.options[ names[0] ])
@@ -467,28 +461,28 @@ function getOpts(input, optdef, config){
 				result.options[name] = value;
 			});
 		}
-	};
+	}
 	
 	
-	/** Pushes the contents of the current option into result.options and resets the pointer */
-	let wrapItUp = () => {
+	// Push whatever we've currently collected for this option and reset pointer
+	function wrapItUp(){
 		let optValue = currentOption.values;
 		
-		/** Don't store solitary values in an array. Store them directly as strings */
-		if(currentOption.arity === 1 && !currentOption.variadic)
+		// Don't store solitary values in an array. Store them directly as strings
+		if(1 === currentOption.arity && !currentOption.variadic)
 			optValue = optValue[0];
 
 		setValue(currentOption, optValue);
 		currentOption.values = [];
 		currentOption = null;
-	};
+	}
 	
 	
-	/** Reverses the argument order of the given array, keeping options and their parameter lists intact */
-	let flip = function(input){
+	// Reverse the order of an argument list, keeping options and their parameter lists intact
+	function flip(input){
 		input = input.reverse();
 		
-		/** Flip any options back into the right order */
+		// Flip any options back into the right order
 		for(let i = 0, l = input.length; i < l; ++i){
 			let arg = input[i];
 			let opt = shortNames[arg] || longNames[arg];
@@ -502,40 +496,39 @@ function getOpts(input, optdef, config){
 		}
 		
 		return input;
-	};
+	}
 	
 	
-	/** Tackle bundling: make sure there's at least one option with a short name to work with */
-	let nameKeys = Object.keys(shortNames);
+	// Tackle bundling. Ensure there's at least one option with a short name to work with.
+	const nameKeys = Object.keys(shortNames);
 	let bundleMatch, bundlePatterns, niladicArgs;
 	
 	if(!noBundling && nameKeys.length){
-		bundlePatterns  = uniqueStrings(nameKeys.map(n => shortNames[n].getBundlePattern())).join("|");
+		bundlePatterns  = uniqueStrings(nameKeys.map(n => shortNames[n].bundlePattern)).join("|");
 		bundleMatch     = new RegExp("^-("+bundlePatterns+")+", "g");
-		niladicArgs     = uniqueStrings(nameKeys.filter(n => !shortNames[n].arity).map(n => shortNames[n].getBundlePattern())).join("|");
+		niladicArgs     = uniqueStrings(nameKeys.filter(n => !shortNames[n].arity).map(n => shortNames[n].bundlePattern)).join("|");
 		niladicArgs     = new RegExp("^(-(?:" + niladicArgs + ")+)((?!" + bundlePatterns + ")\\S+)");
 		bundlePatterns  = new RegExp(bundlePatterns, "g");
 	}
 	
 	
-	
-	/** Is pre-processing of the argument list necessary? */
+	// Is pre-processing of the argument list necessary?
 	if(!ignoreEquals || bundleMatch){
 		
-		/** Limit equals-sign expansion to items that begin with recognised option names */
+		// Limit equals-sign expansion to items that begin with recognised option names
 		let legalNames = new RegExp("^(?:" + Object.keys(longNames).join("|") + ")=");
 		
 		for(let i = 0, l = input.length; i < l; ++i){
 			let arg = input[i];
 			
-			/** We have bundling in use */
+			// We have bundling in use
 			if(bundleMatch){
 				bundleMatch.lastIndex = 0;
 				
-				/** Expand bundled option clusters ("-mvl2" -> "-m -v -l 2") */
+				// Expand bundled option clusters ("-mvl2" -> "-m -v -l 2")
 				if(bundleMatch.test(arg)){
 					
-					/** Break off arguments that're attached to niladic options */
+					// Break off arguments attached to niladic options
 					const niladicMatch = arg.match(niladicArgs);
 					if(niladicMatch){
 						niladicArgs.lastIndex = 0;
@@ -544,20 +537,13 @@ function getOpts(input, optdef, config){
 						l = input.length;
 					}
 					
-					let segments = arg.match(bundlePatterns).map(m => {
-						
-						/** Obtain a pointer to the original Option instance that defined this short-name */
-						let opt = shortNames["-"+m[0]];
-						
-						/** This option doesn't accept any arguments, so just keep it simple */
-						if(!opt.arity)
-							return ["-"+m[0]];
-						
-						let matches = m.match(new RegExp(opt.getBundlePattern())).slice(1).filter(i => i);
-						return ["-"+m[0], ...matches];
-					});
-					
-					segments = [].concat(...segments);
+					const segments = [].concat(...arg.match(bundlePatterns).map(m => {
+						const option = shortNames["-"+m[0]];
+						const result = ["-" + m[0]];
+						if(!option.arity) return result;
+						result.push(...m.match(new RegExp(option.bundlePattern)).slice(1).filter(i => i));
+						return result;
+					}));
 					input.splice(i, 1, ...segments);
 					l =  input.length;
 					i += segments.length - 1;
@@ -565,74 +551,67 @@ function getOpts(input, optdef, config){
 				}
 			}
 			
-			/** Expand "--option=value" sequences to become "--option value" */
+			// Expand "--option=value" sequences to become "--option value"
 			if(legalNames.test(arg)){
-				let match = arg.match(/^([^=]+)=(.+)$/);
+				const match = arg.match(/^([^=]+)=(.+)$/);
 				input.splice(i, 1, match[1], match[2]);
 				l =  input.length;
 				i += 1;
-				continue;
 			}
 		}
 	}
 	
 	
-	/** If we're handling duplicate options with "limit-last", flip the input order */
+	// If we're handling duplicate options with "limit-last", flip the input order
 	if("limit-last" === duplicates)
 		input = flip(input);
 	
-	
-	/** Start processing the arguments we were given to handle */
+	// Start processing the arguments we were given to handle
 	for(let i = 0, l = input.length; i < l; ++i){
 		let arg = input[i];
 		let opt = shortNames[arg] || longNames[arg];
 		
-		
-		/** This argument matches a recognised option name */
+		// This argument matches a recognised option name
 		if(opt){
 			
-			/** Record the name given on command-line that matched the option */
+			// Record the name given on command-line that matched the option
 			opt.lastMatchedName = arg;
 			
-			
-			/** Did we have an existing option that was collecting values? */
+			// Did we have an existing option that was collecting values?
 			if(currentOption) wrapItUp();
 			
 			
-			/** This option takes at least one argument */
+			// Option takes at least one argument
 			if(opt.arity)
 				currentOption = opt;
 			
-			/** This option takes no arguments, so just assign it a value of "true" */
+			// This option takes no arguments, so just assign it a value of "true"
 			else setValue(opt, true);
 			
 			
-			/** Store an additional back-reference to the current option's name */
+			// Store an additional back-reference to the current option's name
 			opt.prevMatchedName = arg;
 		}
 		
-		
 		else{
-			/** A previous option is still collecting arguments */
+			// A previous option is still collecting arguments
 			if(currentOption && currentOption.canCollect)
 				currentOption.values.push(arg);
 			
-			/** Not an option's argument, just a... "regular" argument or whatever y'wanna call it */
+			// Not associated with an option; push this value onto the argv array
 			else{
-				/** If there was an option collecting stuff, show it the door */
 				currentOption && wrapItUp();
-				
 				result.argv.push(arg);
 			}
 		}
 	}
 	
 	
-	/** Ended abruptly? */
+	// Ended abruptly?
 	if(currentOption) wrapItUp();
 	
 	
-	/** Check if we need to flip the returned .argv array back into the right order again */
+	// Check if we need to flip the returned .argv array back into the right order again
 	if("limit-last" === duplicates)
 		result.argv = flip(result.argv);
 		
@@ -640,6 +619,5 @@ function getOpts(input, optdef, config){
 }
 
 
-/** Export */
 if("undefined" !== typeof module.exports)
 	module.exports = getOpts;

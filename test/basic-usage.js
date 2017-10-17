@@ -1,15 +1,12 @@
 "use strict";
 
 const getOpts = require("../index.js");
-const assert  = require("chai").assert;
+const {assert} = require("chai");
 
 
-suite("Basic usage", function(){
-	
-	
-	test("Bundled short-options", function(){
-		
-		let tests  = [{
+suite("Basic usage", () => {
+	test("Bundled short-options", () => {
+		const tests  = [{
 			input: "-hvn2",
 			expected: {
 				options: {
@@ -43,8 +40,8 @@ suite("Basic usage", function(){
 			}
 		}];
 		
-		for(let i of tests){
-			let result = getOpts(i.input.split(/\s+/g), {
+		for(const test of tests){
+			const result = getOpts(test.input.split(/\s+/g), {
 				"-h, --help, --usage":    "",
 				"-v, --version":          "",
 				"-n, --number-of-lines":  "<number=\\d+>",
@@ -56,11 +53,10 @@ suite("Basic usage", function(){
 				"-r, --range":            "<min=\\d+> <max=\\d+>"
 			}, {noAliasPropagation: "first-only"});
 			
-			assert.deepEqual(result, i.expected);
+			assert.deepEqual(result, test.expected);
 		}
 		
-		
-		let result = getOpts(["-c0", "-u0"], {
+		const result = getOpts(["-c0", "-u0"], {
 			"-m, --mutilate":        "<bool>",
 			"-u, --underline-urls":  "<bool>",
 			"-i, --indent":          "<string>",
@@ -80,10 +76,8 @@ suite("Basic usage", function(){
 	});
 	
 	
-	
-	test("Argument and option order", function(){
-		
-		let tests  = [{
+	test("Argument and option order", () => {
+		const tests  = [{
 			input: "-l 2 --set-size 640 480 -s alpha beta gamma",
 			expected: {
 				options: {
@@ -105,9 +99,8 @@ suite("Basic usage", function(){
 			}
 		}];
 		
-		for(let i of tests){
-			
-			let result = getOpts(i.input.split(/\s+/g), {
+		for(const test of tests){
+			const result = getOpts(test.input.split(/\s+/g), {
 				"-l, --level":            "<level>",
 				"-t, --type":             "<type>",
 				"-z, --set-size":         "[width=\\d+] [height=\\d+]",
@@ -115,15 +108,13 @@ suite("Basic usage", function(){
 				"-d, --delete-files":     "<safely> <files...>",
 				"-s, -T, --set-type":     "<key> <type>"
 			}, {noAliasPropagation: "first-only"});
-			
-			assert.deepEqual(result, i.expected);
+			assert.deepEqual(result, test.expected);
 		}
-		
 	});
 	
 	
-	test("Equals-sign assignment", function(){
-		let tests = [{
+	test("Equals-sign assignment", () => {
+		const tests = [{
 			input: "--width=320 --config=/path/to/some/file",
 			expected: {
 				options: {
@@ -134,18 +125,18 @@ suite("Basic usage", function(){
 			}
 		}];
 		
-		for(let i of tests){
-			let result = getOpts(i.input.split(/\s+/g), {
+		for(const test of tests){
+			const result = getOpts(test.input.split(/\s+/g), {
 				"-w, --width": "<number>",
 				"-c, --config": "<string>"
 			}, {noAliasPropagation: "first-only"});
-			assert.deepEqual(result, i.expected);
+			assert.deepEqual(result, test.expected);
 		}
 	});
 	
 	
-	test("Niladic bundles", function(){
-		let tests = [{
+	test("Niladic bundles", () => {
+		const tests = [{
 			input: "-ab0c",
 			expected: {
 				argv: ["0c"],
@@ -166,22 +157,20 @@ suite("Basic usage", function(){
 			}
 		}];
 		
-		for(let i of tests){
-			let result = getOpts(i.input.split(/\s+/g), {
+		for(const test of tests){
+			const result = getOpts(test.input.split(/\s+/g), {
 				"-a": "",
 				"-b": "",
 				"-c": "",
 				"-d": "<arg>"
 			}, {noAliasPropagation: "first-only"});
-			assert.deepEqual(result, i.expected);
+			assert.deepEqual(result, test.expected);
 		}
 	});
 	
 	
-	
-	test("Variadic options", function(){
-		
-		let tests  = [{
+	test("Variadic options", () => {
+		const tests  = [{
 			input: "-f one two three four five",
 			expected: {
 				options: {
@@ -201,22 +190,19 @@ suite("Basic usage", function(){
 			}
 		}];
 		
-		for(let i of tests){
-			let result = getOpts(i.input.split(/\s+/g), {
+		for(const test of tests){
+			const result = getOpts(test.input.split(/\s+/g), {
 				"-f, --files":  "<list...>",
 				"-l, --list":   "<letter=[A-Za-z]> <integer=\\d+> <mystery...>",
 				"-n, --name":   "<name>"
 			}, {noAliasPropagation: "first-only"});
-			
-			assert.deepEqual(result, i.expected);
+			assert.deepEqual(result, test.expected);
 		}
 	});
 	
 	
-	
-	test("Anonymous options", function(){
-		
-		let tests = [{
+	test("Anonymous options", () => {
+		const tests = [{
 			input: "--something --size 640 480 --yea=nah unknown",
 			expected: {
 				argv: ["unknown"],
@@ -276,14 +262,13 @@ suite("Basic usage", function(){
 			}
 		}];
 
-		for(let i of tests){
-			let result = getOpts(i.input.split(/\s+/g));
-			assert.deepEqual(result, i.expected);
+		for(const test of tests){
+			const result = getOpts(test.input.split(/\s+/g));
+			assert.deepEqual(result, test.expected);
 		}
 		
-		
-		let input = "--not-camel-cased --file-name output.log --verbose-logging";
-		let result = getOpts(input.split(/\s+/g), false, {noCamelCase: true});
+		const input = "--not-camel-cased --file-name output.log --verbose-logging";
+		const result = getOpts(input.split(/\s+/g), false, {noCamelCase: true});
 		assert.deepEqual(result, {
 			argv: [],
 			options: {
@@ -295,10 +280,8 @@ suite("Basic usage", function(){
 	});
 	
 	
-	
-	test("Shell-style definitions", function(){
-		
-		let tests = [{
+	test("Shell-style definitions", () => {
+		const tests = [{
 			input: ["abc", "-a -b -c"],
 			expected: {
 				argv: [],
@@ -345,9 +328,9 @@ suite("Basic usage", function(){
 			}
 		}];
 		
-		for(let i of tests){
-			let result = getOpts(i.input[1].split(/\s+/g), i.input[0]);
-			assert.deepEqual(result, i.expected);
+		for(const test of tests){
+			const result = getOpts(test.input[1].split(/\s+/g), test.input[0]);
+			assert.deepEqual(result, test.expected);
 		}
 	});
 });

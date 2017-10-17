@@ -1,10 +1,10 @@
 "use strict";
 
 const getOpts = require("../index.js");
-const assert  = require("chai").assert;
+const {assert} = require("chai");
 
 
-suite("Duplicate option handling", function(){
+suite("Duplicate option handling", () => {
 	let optdef = {"-a, --arg": "<numbers=\\d+>"};
 	let config = {
 		noAliasPropagation: "first-only",
@@ -12,9 +12,8 @@ suite("Duplicate option handling", function(){
 	};
 	
 	
-	test("Mode: use-first", function(){
-		
-		let tests  = [{
+	test("Mode: use-first", () => {
+		const tests = [{
 			input: "--arg 1 alpha --arg 2 beta --arg 3 gamma --arg 4 delta",
 			expected: {
 				options: {arg: "1"},
@@ -28,19 +27,18 @@ suite("Duplicate option handling", function(){
 			}
 		}];
 		
-		for(let i of tests)
+		for(const test of tests)
 			assert.deepEqual(getOpts(
-				i.input.split(/\s+/g),
+				test.input.split(/\s+/g),
 				optdef,
 				config
-			), i.expected);
+			), test.expected);
 	});
 	
 	
-	test("Mode: use-last", function(){
+	test("Mode: use-last", () => {
 		config.duplicates = "use-last";
-		
-		let tests  = [{
+		const tests = [{
 			input: "--arg 1 alpha --arg 2 beta --arg 3 gamma --arg 4 delta",
 			expected: {
 				options: {arg: "4"},
@@ -54,117 +52,104 @@ suite("Duplicate option handling", function(){
 			}
 		}];
 		
-		for(let i of tests)
+		for(let test of tests)
 			assert.deepEqual(getOpts(
-				i.input.split(/\s+/g),
+				test.input.split(/\s+/g),
 				optdef,
 				config
-			), i.expected);
+			), test.expected);
 	});
 	
 	
-	test("Mode: limit-first", function(){
+	test("Mode: limit-first", () => {
 		config.duplicates = "limit-first";
-		
-		let tests  = [{
+		const tests = [{
 			input: "--arg 1 alpha --arg 2 beta --arg 3 gamma --arg 4 delta",
 			expected: {
 				options: {arg: "1"},
 				argv: ["alpha", "--arg", "2", "beta", "--arg", "3", "gamma", "--arg", "4", "delta"]
 			}
 		}];
-		
-		for(let i of tests)
+		for(const test of tests)
 			assert.deepEqual(getOpts(
-				i.input.split(/\s+/g),
+				test.input.split(/\s+/g),
 				optdef,
 				config
-			), i.expected);
+			), test.expected);
 	});
 	
 	
-	test("Mode: limit-last", function(){
+	test("Mode: limit-last", () => {
 		config.duplicates = "limit-last";
 		optdef = {"-s, --set-size": "<width=\\d+> <height=\\d+>"};
-		
-		let tests  = [{
+		const tests = [{
 			input: "alpha --set-size 640 480 beta --set-size 800 600 gamma --set-size 1024 768",
 			expected: {
 				options: {setSize: ["1024", "768"]},
 				argv: ["alpha", "--set-size", "640", "480", "beta", "--set-size", "800", "600", "gamma"]
 			}
 		}];
-		
-		for(let i of tests)
+		for(const test of tests)
 			assert.deepEqual(getOpts(
-				i.input.split(/\s+/g),
+				test.input.split(/\s+/g),
 				optdef,
 				config
-			), i.expected);
+			), test.expected);
 	});
 	
 
-	test("Mode: error", function(){
+	test("Mode: error", () => {
 		config.duplicates = "error";
-
-		let fn = () => {
-			let input  = "--arg 1 alpha --arg 2";
-			let optdef = {"-a, --arg": "<numbers=\\d+>"};
+		assert.throw(() => {
+			const input = "--arg 1 alpha --arg 2";
+			const optdef = {"-a, --arg": "<numbers=\\d+>"};
 			return getOpts(input.split(/\s+/g), optdef, config);
-		};
-		
-		assert.throw(fn, "Attempting to reassign option");
+		}, "Attempting to reassign option");
 	});
 	
 	
-	test("Mode: append", function(){
+	test("Mode: append", () => {
 		config.duplicates = "append";
 		optdef = {"-s, --set-size": "<width=\\d+> <height=\\d+>"};
-		
-		let tests  = [{
+		const tests = [{
 			input: "--set-size 640 480 alpha --set-size 1024 768 beta",
 			expected: {
 				options: {setSize: ["640", "480", "1024", "768"]},
 				argv: ["alpha", "beta"]
 			}
 		}];
-		
-		for(let i of tests)
+		for(const test of tests)
 			assert.deepEqual(getOpts(
-				i.input.split(/\s+/g),
+				test.input.split(/\s+/g),
 				optdef,
 				config
-			), i.expected);
+			), test.expected);
 	});
 
 
-	test("Mode: stack", function(){
+	test("Mode: stack", () => {
 		config.duplicates = "stack";
 		optdef = {"-s, --set-size": "<width=\\d+> <height=\\d+>"};
-		
-		let tests  = [{
+		const tests = [{
 			input: "--set-size 640 480 alpha --set-size 1024 768 beta",
 			expected: {
 				options: {setSize: [["640", "480"], ["1024", "768"]]},
 				argv: ["alpha", "beta"]
 			}
 		}];
-		
-		for(let i of tests)
+		for(const test of tests)
 			assert.deepEqual(getOpts(
-				i.input.split(/\s+/g),
+				test.input.split(/\s+/g),
 				optdef,
 				config
-			), i.expected);
+			), test.expected);
 	});
 	
 	
-	
-	test("Mode: stack-values", function(){
+	test("Mode: stack-values", () => {
 		config.duplicates = "stack-values";
 		optdef = {"-s, --set-size": "<width=\\d+> <height=\\d+>"};
-		
-		let tests  = [{
+		const tests = [{
 			input: "--set-size 640 480 alpha --set-size 1024 768 beta",
 			expected: {
 				options: {setSize: [["640", "1024"], ["480", "768"]]},
@@ -177,16 +162,11 @@ suite("Duplicate option handling", function(){
 				argv: ["alpha"]
 			}
 		}];
-		
-		for(let i of tests)
+		for(const test of tests)
 			assert.deepEqual(getOpts(
-				i.input.split(/\s+/g),
+				test.input.split(/\s+/g),
 				optdef,
 				config
-			), i.expected);
+			), test.expected);
 	});
-	
-
-
-	
 });

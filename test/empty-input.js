@@ -1,43 +1,43 @@
 "use strict";
 
 const getOpts = require("../index.js");
-const assert  = require("chai").assert;
+const {assert} = require("chai");
 
 
-suite("Empty input", function(){
+suite("Empty input", () => {
 	const emptyResult = {
 		options: new Object(null),
 		argv: []
 	};
 	
-	test("No arguments", function(){
+	test("No arguments", () => {
 		const actual = getOpts();
 		assert.deepEqual(actual, emptyResult);
 	});
 	
-	test("Options: Empty array", function(){
+	test("Options: Empty array", () => {
 		const actual = getOpts([], {"-e": ""});
 		assert.deepEqual(actual, emptyResult);
 	});
 	
-	test("Options: Empty string", function(){
+	test("Options: Empty string", () => {
 		const actual = getOpts("", {"-e": ""});
 		assert.deepEqual(actual, emptyResult);
 	});
 	
-	test("Options: Unexpected types", function(){
+	test("Options: Unexpected types", () => {
 		const input = [NaN, false, null, true];
-		for(let i of input)
-			assert.deepEqual(getOpts(i, {"-e": ""}), emptyResult);
+		for(const test of input)
+			assert.deepEqual(getOpts(test, {"-e": ""}), emptyResult);
 	});
 	
-	test("Optdef: Empty object", function(){
+	test("Optdef: Empty object", () => {
 		const opts = ["--option=value"];
 		const actual = getOpts(opts, {});
 		assert.deepEqual(actual, {argv: opts, options: {}});
 	});
 	
-	test("Optdef: Empty string", function(){
+	test("Optdef: Empty string", () => {
 		const opts = ["--option=value"];
 		const actual = getOpts(opts, "");
 		assert.deepEqual(actual, {
@@ -48,10 +48,10 @@ suite("Empty input", function(){
 		});
 	});
 	
-	test("Optdef: Unexpected types", function(){
+	test("Optdef: Unexpected types", () => {
 		const argv    = ["value"];
 		const optdefs = [undefined, NaN, false, null, true];
-		for(let i of optdefs)
-			assert.deepEqual(getOpts(argv, i), {argv, options: {}});
+		for(const test of optdefs)
+			assert.deepEqual(getOpts(argv, test), {argv, options: {}});
 	});
 });
