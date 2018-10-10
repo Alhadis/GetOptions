@@ -6,7 +6,7 @@
 	"repository": "https://github.com/Alhadis/GetOptions",
 	"license": "ISC",
 	"engines": { "node": ">=6.0.0" },
-	"files": ["index.js"],
+	"files": ["index.js", "index.d.ts"],
 	"typings": "index.d.ts",
 	"dependencies": {},
 	"devDependencies": {
