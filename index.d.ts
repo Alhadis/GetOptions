@@ -1,6 +1,6 @@
 export declare type Options = { options: any; argv: string[] };
 export declare type Config = {
-	noAliasPropagation?: boolean;
+	noAliasPropagation?: boolean | 'first-only';
 	noCamelCase?: boolean;
 	noBundling?: boolean;
 	ignoreEquals?: boolean;
