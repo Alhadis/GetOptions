@@ -10,7 +10,12 @@
 	"typings": "index.d.ts",
 	"dependencies": {},
 	"devDependencies": {
+		"@alhadis/eslint-config": "^1.0.0",
+		"eslint": "^5.6.1",
 		"mocha": "*",
 		"chai":  "*"
+	},
+	"eslintConfig": {
+		"extends": "@alhadis/eslint-config"
 	}
 }

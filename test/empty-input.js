@@ -7,7 +7,7 @@ const {assert} = require("chai");
 suite("Empty input", () => {
 	const emptyResult = {
 		options: new Object(null),
-		argv: []
+		argv: [],
 	};
 	
 	test("No arguments", () => {
@@ -42,9 +42,7 @@ suite("Empty input", () => {
 		const actual = getOpts(opts, "");
 		assert.deepEqual(actual, {
 			argv: [],
-			options: {
-				option: "value"
-			}
+			options: {option: "value"},
 		});
 	});
 	

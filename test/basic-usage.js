@@ -12,10 +12,10 @@ suite("Basic usage", () => {
 				options: {
 					help: true,
 					version: true,
-					numberOfLines: "2"
+					numberOfLines: "2",
 				},
-				argv: []
-			}
+				argv: [],
+			},
 		}, {
 			input: "-r10 20 -vn55id2",
 			expected: {
@@ -24,10 +24,10 @@ suite("Basic usage", () => {
 					version: true,
 					numberOfLines: "55",
 					invertMatches: true,
-					debugLevel: "2"
+					debugLevel: "2",
 				},
-				argv: []
-			}
+				argv: [],
+			},
 		}, {
 			input: "-mvl2",
 			expected: {
@@ -35,9 +35,9 @@ suite("Basic usage", () => {
 				options: {
 					messages: true,
 					version: true,
-					level: "2"
-				}
-			}
+					level: "2",
+				},
+			},
 		}];
 		
 		for(const test of tests){
@@ -50,7 +50,7 @@ suite("Basic usage", () => {
 				"-l, --level":            "<number=\\d+>",
 				"-d, --debug-level":      "<number=\\d+>",
 				"-c, --config":           "<key> <value>",
-				"-r, --range":            "<min=\\d+> <max=\\d+>"
+				"-r, --range":            "<min=\\d+> <max=\\d+>",
 			}, {noAliasPropagation: "first-only"});
 			
 			assert.deepEqual(result, test.expected);
@@ -60,7 +60,7 @@ suite("Basic usage", () => {
 			"-m, --mutilate":        "<bool>",
 			"-u, --underline-urls":  "<bool>",
 			"-i, --indent":          "<string>",
-			"-c, --colour, --colours, --colourise": "<bool>"
+			"-c, --colour, --colours, --colourise": "<bool>",
 		});
 		assert.deepEqual(result, {
 			argv: [],
@@ -70,8 +70,8 @@ suite("Basic usage", () => {
 				colours: "0",
 				colourise: "0",
 				u: "0",
-				underlineUrls: "0"
-			}
+				underlineUrls: "0",
+			},
 		});
 	});
 	
@@ -83,20 +83,20 @@ suite("Basic usage", () => {
 				options: {
 					level: "2",
 					setSize: ["640", "480"],
-					setType: ["alpha", "beta"]
+					setType: ["alpha", "beta"],
 				},
-				argv: ["gamma"]
-			}
+				argv: ["gamma"],
+			},
 		}, {
 			input: "foo -l 2 bar --set-size 640 480 760 -s alpha beta gamma",
 			expected: {
 				options: {
 					level: "2",
 					setSize: ["640", "480"],
-					setType: ["alpha", "beta"]
+					setType: ["alpha", "beta"],
 				},
-				argv: ["foo", "bar", "760", "gamma"]
-			}
+				argv: ["foo", "bar", "760", "gamma"],
+			},
 		}];
 		
 		for(const test of tests){
@@ -106,7 +106,7 @@ suite("Basic usage", () => {
 				"-z, --set-size":         "[width=\\d+] [height=\\d+]",
 				"-c, --set-config":       "<numbers=\\d+> <letters=[A-Za-z]+>",
 				"-d, --delete-files":     "<safely> <files...>",
-				"-s, -T, --set-type":     "<key> <type>"
+				"-s, -T, --set-type":     "<key> <type>",
 			}, {noAliasPropagation: "first-only"});
 			assert.deepEqual(result, test.expected);
 		}
@@ -119,16 +119,16 @@ suite("Basic usage", () => {
 			expected: {
 				options: {
 					width: "320",
-					config: "/path/to/some/file"
+					config: "/path/to/some/file",
 				},
-				argv: []
-			}
+				argv: [],
+			},
 		}];
 		
 		for(const test of tests){
 			const result = getOpts(test.input.split(/\s+/g), {
-				"-w, --width": "<number>",
-				"-c, --config": "<string>"
+				"-w, --width":  "<number>",
+				"-c, --config": "<string>",
 			}, {noAliasPropagation: "first-only"});
 			assert.deepEqual(result, test.expected);
 		}
@@ -142,19 +142,19 @@ suite("Basic usage", () => {
 				argv: ["0c"],
 				options: {
 					a: true,
-					b: true
-				}
-			}
-		},{
+					b: true,
+				},
+			},
+		}, {
 			input: "-a0 -cda0",
 			expected: {
 				argv: ["0"],
 				options: {
 					a: true,
 					c: true,
-					d: "a0"
-				}
-			}
+					d: "a0",
+				},
+			},
 		}];
 		
 		for(const test of tests){
@@ -162,7 +162,7 @@ suite("Basic usage", () => {
 				"-a": "",
 				"-b": "",
 				"-c": "",
-				"-d": "<arg>"
+				"-d": "<arg>",
 			}, {noAliasPropagation: "first-only"});
 			assert.deepEqual(result, test.expected);
 		}
@@ -174,27 +174,27 @@ suite("Basic usage", () => {
 			input: "-f one two three four five",
 			expected: {
 				options: {
-					files: ["one", "two", "three", "four", "five"]
+					files: ["one", "two", "three", "four", "five"],
 				},
-				argv: []
-			}
+				argv: [],
+			},
 		}, {
 			input: "-f one two three 4 5 -lA3 uno dos tres cuatro -n Ajaja",
 			expected: {
 				options: {
 					files: ["one", "two", "three", "4", "5"],
 					list:  ["A", "3", "uno", "dos", "tres", "cuatro"],
-					name:  "Ajaja"
+					name:  "Ajaja",
 				},
-				argv: []
-			}
+				argv: [],
+			},
 		}];
 		
 		for(const test of tests){
 			const result = getOpts(test.input.split(/\s+/g), {
 				"-f, --files":  "<list...>",
 				"-l, --list":   "<letter=[A-Za-z]> <integer=\\d+> <mystery...>",
-				"-n, --name":   "<name>"
+				"-n, --name":   "<name>",
 			}, {noAliasPropagation: "first-only"});
 			assert.deepEqual(result, test.expected);
 		}
@@ -209,57 +209,57 @@ suite("Basic usage", () => {
 				options: {
 					something: true,
 					size: ["640", "480"],
-					yea: "nah"
-				}
-			}
-		},{
+					yea: "nah",
+				},
+			},
+		}, {
 			input: "--something --size=640 480 --yea nah unknown",
 			expected: {
 				argv: ["480", "nah", "unknown"],
 				options: {
 					something: true,
 					size: "640",
-					yea: true
-				}
-			}
-		},{
+					yea: true,
+				},
+			},
+		}, {
 			input: "--path /to/some/file --verbose -q argv1 argv2",
 			expected: {
 				argv: ["argv1", "argv2"],
 				options: {
 					path: "/to/some/file",
 					verbose: true,
-					q: true
-				}
-			}
-		},{
+					q: true,
+				},
+			},
+		}, {
 			input: "--path /to/some/file /and/some/other/file --verbose",
 			expected: {
 				argv: [],
 				options: {
 					path: ["/to/some/file", "/and/some/other/file"],
-					verbose: true
-				}
-			}
-		},{
+					verbose: true,
+				},
+			},
+		}, {
 			input: "one two three --path /to/some/file /and/another/file /and/yet/another --files everywhere man",
 			expected: {
 				argv: ["one", "two", "three", "everywhere", "man"],
 				options: {
 					path: ["/to/some/file", "/and/another/file", "/and/yet/another"],
-					files: true
-				}
-			}
-		},{
+					files: true,
+				},
+			},
+		}, {
 			input: "1-one 2-two 3-three 4-four --path=/to/some file --verbose -log=log.txt argv1 argv2",
 			expected: {
 				argv: ["1-one", "2-two", "3-three", "4-four", "file", "argv1", "argv2"],
 				options: {
 					path: "/to/some",
 					verbose: true,
-					log: "log.txt"
-				}
-			}
+					log: "log.txt",
+				},
+			},
 		}];
 
 		for(const test of tests){
@@ -274,8 +274,8 @@ suite("Basic usage", () => {
 			options: {
 				"not-camel-cased": true,
 				"file-name": "output.log",
-				"verbose-logging": true
-			}
+				"verbose-logging": true,
+			},
 		});
 	});
 	
@@ -288,20 +288,20 @@ suite("Basic usage", () => {
 				options: {
 					a: true,
 					b: true,
-					c: true
-				}
-			}
-		},{
+					c: true,
+				},
+			},
+		}, {
 			input: ["a:b:c:", "-a1 -b2 -c3"],
 			expected: {
 				argv: [],
 				options: {
 					a: "1",
 					b: "2",
-					c: "3"
-				}
-			}
-		},{
+					c: "3",
+				},
+			},
+		}, {
 			input: ["ab:c:de:f:", "-abc -c1 -d -ef"],
 			expected: {
 				argv: [],
@@ -310,10 +310,10 @@ suite("Basic usage", () => {
 					b: "c",
 					c: "1",
 					d: true,
-					e: "f"
-				}
-			}
-		},{
+					e: "f",
+				},
+			},
+		}, {
 			input: ["abc d:e2: f1:", "-a1b -bd2 -c2a"],
 			expected: {
 				argv: [],
@@ -323,9 +323,9 @@ suite("Basic usage", () => {
 					d: "2",
 					c: true,
 					2: "a",
-					1: "b"
-				}
-			}
+					1: "b",
+				},
+			},
 		}];
 		
 		for(const test of tests){
