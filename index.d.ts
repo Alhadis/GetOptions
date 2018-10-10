@@ -5,14 +5,14 @@ export declare type Config = {
 	noBundling?: boolean;
 	ignoreEquals?: boolean;
 	duplicates?:
-		| 'use-first'
-		| 'use-last'
-		| 'limit-first'
-		| 'limit-last'
-		| 'error'
-		| 'append'
-		| 'stack'
-		| 'stack-values';
+		| "use-first"
+		| "use-last"
+		| "limit-first"
+		| "limit-last"
+		| "error"
+		| "append"
+		| "stack"
+		| "stack-values";
 };
 export declare function getOpts(
 	input: any[],
