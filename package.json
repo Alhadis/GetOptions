@@ -1,16 +1,25 @@
 {
 	"name": "get-options",
-	"version": "1.1.1",
+	"version": "1.1.2",
 	"description": "JavaScript's answer to getopts. Simple, obvious, and direct.",
 	"keywords": ["CLI", "getopt", "getopts", "options", "argv", "command-line", "configuration", "config"],
 	"repository": "https://github.com/Alhadis/GetOptions",
 	"license": "ISC",
 	"engines": { "node": ">=6.0.0" },
-	"files": ["index.js"],
+	"files": ["index.js", "index.d.ts"],
 	"typings": "index.d.ts",
 	"dependencies": {},
 	"devDependencies": {
+		"@alhadis/eslint-config": "^1.0.0",
+		"eslint": "^5.6.1",
 		"mocha": "*",
 		"chai":  "*"
+	},
+	"eslintConfig": {
+		"extends": "@alhadis/eslint-config"
+	},
+	"scripts": {
+		"lint": "npx eslint .",
+		"test": "npx mocha test/"
 	}
 }

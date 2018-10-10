@@ -6,9 +6,9 @@ const {assert} = require("chai");
 
 suite("Duplicate option handling", () => {
 	let optdef = {"-a, --arg": "<numbers=\\d+>"};
-	let config = {
+	const config = {
 		noAliasPropagation: "first-only",
-		duplicates: "use-first"
+		duplicates: "use-first",
 	};
 	
 	
@@ -17,14 +17,14 @@ suite("Duplicate option handling", () => {
 			input: "--arg 1 alpha --arg 2 beta --arg 3 gamma --arg 4 delta",
 			expected: {
 				options: {arg: "1"},
-				argv: ["alpha", "beta", "gamma", "delta"]
-			}
+				argv: ["alpha", "beta", "gamma", "delta"],
+			},
 		}, {
 			input: "alpha beta --arg alpha --arg 2 --arg 2 gamma --arg 3 delta --arg 4 epsilon",
 			expected: {
 				options: {arg: "alpha"},
-				argv: ["alpha", "beta", "gamma", "delta", "epsilon"]
-			}
+				argv: ["alpha", "beta", "gamma", "delta", "epsilon"],
+			},
 		}];
 		
 		for(const test of tests)
@@ -42,17 +42,17 @@ suite("Duplicate option handling", () => {
 			input: "--arg 1 alpha --arg 2 beta --arg 3 gamma --arg 4 delta",
 			expected: {
 				options: {arg: "4"},
-				argv: ["alpha", "beta", "gamma", "delta"]
-			}
+				argv: ["alpha", "beta", "gamma", "delta"],
+			},
 		}, {
 			input: "alpha beta --arg alpha --arg 2 --arg 2 gamma --arg 3 delta --arg 4 epsilon",
 			expected: {
 				options: {arg: "4"},
-				argv: ["alpha", "beta", "gamma", "delta", "epsilon"]
-			}
+				argv: ["alpha", "beta", "gamma", "delta", "epsilon"],
+			},
 		}];
 		
-		for(let test of tests)
+		for(const test of tests)
 			assert.deepEqual(getOpts(
 				test.input.split(/\s+/g),
 				optdef,
@@ -67,8 +67,8 @@ suite("Duplicate option handling", () => {
 			input: "--arg 1 alpha --arg 2 beta --arg 3 gamma --arg 4 delta",
 			expected: {
 				options: {arg: "1"},
-				argv: ["alpha", "--arg", "2", "beta", "--arg", "3", "gamma", "--arg", "4", "delta"]
-			}
+				argv: ["alpha", "--arg", "2", "beta", "--arg", "3", "gamma", "--arg", "4", "delta"],
+			},
 		}];
 		for(const test of tests)
 			assert.deepEqual(getOpts(
@@ -86,8 +86,8 @@ suite("Duplicate option handling", () => {
 			input: "alpha --set-size 640 480 beta --set-size 800 600 gamma --set-size 1024 768",
 			expected: {
 				options: {setSize: ["1024", "768"]},
-				argv: ["alpha", "--set-size", "640", "480", "beta", "--set-size", "800", "600", "gamma"]
-			}
+				argv: ["alpha", "--set-size", "640", "480", "beta", "--set-size", "800", "600", "gamma"],
+			},
 		}];
 		for(const test of tests)
 			assert.deepEqual(getOpts(
@@ -115,8 +115,8 @@ suite("Duplicate option handling", () => {
 			input: "--set-size 640 480 alpha --set-size 1024 768 beta",
 			expected: {
 				options: {setSize: ["640", "480", "1024", "768"]},
-				argv: ["alpha", "beta"]
-			}
+				argv: ["alpha", "beta"],
+			},
 		}];
 		for(const test of tests)
 			assert.deepEqual(getOpts(
@@ -134,8 +134,8 @@ suite("Duplicate option handling", () => {
 			input: "--set-size 640 480 alpha --set-size 1024 768 beta",
 			expected: {
 				options: {setSize: [["640", "480"], ["1024", "768"]]},
-				argv: ["alpha", "beta"]
-			}
+				argv: ["alpha", "beta"],
+			},
 		}];
 		for(const test of tests)
 			assert.deepEqual(getOpts(
@@ -153,14 +153,14 @@ suite("Duplicate option handling", () => {
 			input: "--set-size 640 480 alpha --set-size 1024 768 beta",
 			expected: {
 				options: {setSize: [["640", "1024"], ["480", "768"]]},
-				argv: ["alpha", "beta"]
-			}
+				argv: ["alpha", "beta"],
+			},
 		}, {
 			input: "--set-size 640 --set-size 1024 768 alpha",
 			expected: {
 				options: {setSize: [["640", "1024"], [, "768"]]},
-				argv: ["alpha"]
-			}
+				argv: ["alpha"],
+			},
 		}];
 		for(const test of tests)
 			assert.deepEqual(getOpts(

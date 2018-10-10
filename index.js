@@ -34,11 +34,11 @@ class Option{
 	 */
 	defineNames(input){
 		if(!Array.isArray(input))
-			input = ("" + input).split(/,/g);
+			input = String(input).split(/,/g);
 		
 		for(let name of input){
 			name = name.trim();
-			/^-([^\s\-])$/.test(name)
+			/^-([^\s-])$/.test(name)
 				? this.shortNames.push(RegExp.lastParen)
 				: this.longNames.push(name.replace(/^-+/, ""));
 		}
@@ -83,7 +83,7 @@ class Option{
 			return this._bundlePattern;
 		
 		const param = this.params.map(param => `(${param.pattern})?`).join("");
-		const names = this.shortNames.length === 1
+		const names = 1 === this.shortNames.length
 			? this.shortNames[0]
 			: `[${this.shortNames.join("")}]`;
 		return (this._bundlePattern = names + param);
@@ -159,25 +159,6 @@ function formatName(input, noCamelCase){
 
 
 /**
- * Inject values into an array at an arbitrary position.
- *
- * This behaves similar to `array.splice(index, 0, values...)`, except the given
- * array is extended if the index is greater than the array's number of elements.
- *
- * @param {Array}  array - Array to operate upon. The value is modified.
- * @param {Number} index - Zero-based index of the array to inject the values into
- * @return {Array} Reference to the (now modified) array which was originally passed
- * @internal
- */
-function injectIntoArray(array, index, ...values){
-	if(index > array.length)
-		array.length = index;
-	array.splice(index, 0, ...values);
-	return array;
-}
-
-
-/**
  * Filter duplicate strings from an array.
  *
  * @param {String[]} input
@@ -207,7 +188,7 @@ function uniqueStrings(input){
  * @return {Object}
  * @internal
  */
-function autoOpts(input, config={}){
+function autoOpts(input, config = {}){
 	const opts = new Object(null);
 	const argv = [];
 	let argvEnd;
@@ -230,9 +211,9 @@ function autoOpts(input, config={}){
 			
 			// Equals sign is used, should it become the option's value?
 			if(!config.ignoreEquals && /=/.test(name)){
-				let split  = name.split(/=/);
-				name       = formatName(split[0], config.noCamelCase);
-				opts[name] = split.slice(1).join("=");
+				const split = name.split(/=/);
+				name        = formatName(split[0], config.noCamelCase);
+				opts[name]  = split.slice(1).join("=");
 			}
 			
 			else{
@@ -243,7 +224,7 @@ function autoOpts(input, config={}){
 				if(next != null && !/^-/.test(next)){
 					
 					// There's another option after this one. Collect multiple non-options into an array.
-					let nextOpt = input.findIndex((s,I) => I > i && /^-/.test(s));
+					const nextOpt = input.findIndex((s, I) => I > i && /^-/.test(s));
 					if(nextOpt !== -1){
 						opts[name] = input.slice(i + 1, nextOpt);
 						
@@ -274,7 +255,7 @@ function autoOpts(input, config={}){
 	
 	return {
 		options: opts,
-		argv:    argv
+		argv:    argv,
 	};
 }
 
@@ -290,7 +271,7 @@ function autoOpts(input, config={}){
 function getOpts(input, optdef, config = {}){
 	
 	// Do nothing if given nothing
-	if(!input || input.length === 0)
+	if(!input || 0 === input.length)
 		return {options: {}, argv: []};
 	
 	// Take a different approach if optdefs aren't specified
@@ -303,7 +284,7 @@ function getOpts(input, optdef, config = {}){
 		const names = optdef.match(/[^\s:]:?/g);
 		optdef = {};
 		names.forEach(name => {
-			optdef["-"+name.replace(/:/, "")] = name.length > 1 ? "<arg>" : "";
+			optdef[`-${name.replace(/:/, "")}`] = name.length > 1 ? "<arg>" : "";
 		});
 	}
 
@@ -321,19 +302,19 @@ function getOpts(input, optdef, config = {}){
 	const result = {argv: [], options: new Object(null)};
 
 	// Define each named option. Throw an error if a duplicate is found.
-	for(let name in optdef){
+	for(const name in optdef){
 		const option = new Option(name, optdef[name]);
 		
 		for(const name of option.shortNames){
 			if(undefined !== shortNames[name])
 				throw new ReferenceError(`Short option "-${name}" already defined`);
-			shortNames["-" + name] = option;
+			shortNames[`-${name}`] = option;
 		}
 		
 		for(const name of option.longNames){
 			if(undefined !== longNames[name])
 				throw new ReferenceError(`Long option "--${name}" already defined`);
-			longNames["--" + name] = option;
+			longNames[`--${name}`] = option;
 		}
 	}
 	
@@ -350,7 +331,8 @@ function getOpts(input, optdef, config = {}){
 				return result.options[name];
 			
 			// Use the last value (or set of values); discard any preceding duplicates. Default.
-			case "use-last": default:
+			case "use-last":
+			default:
 				return result.options[name] = value;
 			
 			// Use the first/last options; treat any following/preceding duplicates as argv items respectively
@@ -361,11 +343,10 @@ function getOpts(input, optdef, config = {}){
 			
 			// Throw an exception
 			case "error":
-				let error = new TypeError(`Attempting to reassign option "${name}" with value(s) ${JSON.stringify(value)}`);
+				const error = new TypeError(`Attempting to reassign option "${name}" with value(s) ${JSON.stringify(value)}`);
 				error.affectedOption = option;
 				error.affectedValue  = value;
 				throw error;
-				break;
 			
 			// Add parameters of duplicate options to the argument list of the first
 			case "append":
@@ -375,9 +356,9 @@ function getOpts(input, optdef, config = {}){
 				break;
 			
 			// Store parameters of duplicated options in a multidimensional array
-			case "stack":{
-				let oldValues = result.options[name];
-				let newValues = arrayify(value);
+			case "stack": {
+				let oldValues   = result.options[name];
+				const newValues = arrayify(value);
 				
 				// This option hasn't been "stacked" yet
 				if(!option.stacked){
@@ -393,13 +374,13 @@ function getOpts(input, optdef, config = {}){
 			}
 			
 			// Store each duplicated value in an array using the order they appear
-			case "stack-values":{
+			case "stack-values": {
 				let values = result.options[name];
 				
 				// First time "stacking" this option (nesting its value/s inside an array)
 				if(!option.stacked){
 					const stack = [];
-					for(let value of arrayify(values))
+					for(const value of arrayify(values))
 						stack.push([value]);
 					values = stack;
 					option.stacked = true;
@@ -448,14 +429,14 @@ function getOpts(input, optdef, config = {}){
 		else{
 			const {names} = option;
 			
-			/** Ascertain if this option's being duplicated */
+			// Ascertain if this option's being duplicated
 			if(result.options[ names[0] ])
 				value = resolveDuplicate(option, value);
 			
 			
 			option.names.forEach(name => {
 				
-				/** Decide whether to camelCase this option name */
+				// Decide whether to camelCase this option name
 				name = formatName(name, noCamelCase);
 				
 				result.options[name] = value;
@@ -484,13 +465,13 @@ function getOpts(input, optdef, config = {}){
 		
 		// Flip any options back into the right order
 		for(let i = 0, l = input.length; i < l; ++i){
-			let arg = input[i];
-			let opt = shortNames[arg] || longNames[arg];
+			const arg = input[i];
+			const opt = shortNames[arg] || longNames[arg];
 			
 			if(opt){
-				let from    = Math.max(0, i - opt.arity);
-				let to      = i + 1;
-				let extract = input.slice(from, to).reverse();
+				const from    = Math.max(0, i - opt.arity);
+				const to      = i + 1;
+				const extract = input.slice(from, to).reverse();
 				input.splice(from, extract.length, ...extract);
 			}
 		}
@@ -505,9 +486,9 @@ function getOpts(input, optdef, config = {}){
 	
 	if(!noBundling && nameKeys.length){
 		bundlePatterns  = uniqueStrings(nameKeys.map(n => shortNames[n].bundlePattern)).join("|");
-		bundleMatch     = new RegExp("^-("+bundlePatterns+")+", "g");
+		bundleMatch     = new RegExp(`^-(${bundlePatterns})+`, "g");
 		niladicArgs     = uniqueStrings(nameKeys.filter(n => !shortNames[n].arity).map(n => shortNames[n].bundlePattern)).join("|");
-		niladicArgs     = new RegExp("^(-(?:" + niladicArgs + ")+)((?!" + bundlePatterns + ")\\S+)");
+		niladicArgs     = new RegExp(`^(-(?:${niladicArgs})+)((?!${bundlePatterns})\\S+)`);
 		bundlePatterns  = new RegExp(bundlePatterns, "g");
 	}
 	
@@ -516,7 +497,7 @@ function getOpts(input, optdef, config = {}){
 	if(!ignoreEquals || bundleMatch){
 		
 		// Limit equals-sign expansion to items that begin with recognised option names
-		let legalNames = new RegExp("^(?:" + Object.keys(longNames).join("|") + ")=");
+		const legalNames = new RegExp(`^(?:${ Object.keys(longNames).join("|") })=`);
 		
 		for(let i = 0, l = input.length; i < l; ++i){
 			let arg = input[i];
@@ -533,13 +514,13 @@ function getOpts(input, optdef, config = {}){
 					if(niladicMatch){
 						niladicArgs.lastIndex = 0;
 						arg = niladicMatch[1];
-						input.splice(i+1, 0, niladicMatch[2]);
+						input.splice(i + 1, 0, niladicMatch[2]);
 						l = input.length;
 					}
 					
 					const segments = [].concat(...arg.match(bundlePatterns).map(m => {
-						const option = shortNames["-"+m[0]];
-						const result = ["-" + m[0]];
+						const option = shortNames[`-${m[0]}`];
+						const result = [`-${m[0]}`];
 						if(!option.arity) return result;
 						result.push(...m.match(new RegExp(option.bundlePattern)).slice(1).filter(i => i));
 						return result;
@@ -568,8 +549,8 @@ function getOpts(input, optdef, config = {}){
 	
 	// Start processing the arguments we were given to handle
 	for(let i = 0, l = input.length; i < l; ++i){
-		let arg = input[i];
-		let opt = shortNames[arg] || longNames[arg];
+		const arg = input[i];
+		const opt = shortNames[arg] || longNames[arg];
 		
 		// This argument matches a recognised option name
 		if(opt){

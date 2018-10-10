@@ -1,6 +1,10 @@
 GetOptions
 ==========
 
+[![Build status: TravisCI](https://travis-ci.org/Alhadis/GetOptions.svg?branch=master)](https://travis-ci.org/Alhadis/GetOptions)
+[![Build status: AppVeyor](https://ci.appveyor.com/api/projects/status/kcobm8bf144ja7oa?svg=true)](https://ci.appveyor.com/project/Alhadis/getoptions)
+
+
 The JavaScript equivalent of `getopts`. No frills, no bullshit; nothing but cold, hard option extraction.
 
 **Use this module if you**

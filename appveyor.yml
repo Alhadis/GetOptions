@@ -1,0 +1,20 @@
+platform: x64
+
+environment:
+    matrix:
+        - nodejs_version: "6"
+        - nodejs_version: "8"
+        - nodejs_version: "10"
+
+install:
+    - ps: Install-Product node $env:nodejs_version
+    - npx --version >NUL 2>&1 || npm install --global npx
+    - npm install
+
+test_script:
+    - node --version
+    - npm --version
+    - npm run --silent lint
+    - npm run --silent test
+
+build: off
