@@ -265,17 +265,17 @@ function autoOpts(input, config = {}){
  * Extract command-line options from a list of strings.
  *
  * @param {Array} input
- * @param {String|Object} optdef
+ * @param {String|Object} [optdef=null]
  * @param {Object} [config={}]
  */
-function getOpts(input, optdef, config = {}){
+function getOpts(input, optdef = null, config = {}){
 	
 	// Do nothing if given nothing
 	if(!input || 0 === input.length)
 		return {options: {}, argv: []};
 	
 	// Take a different approach if optdefs aren't specified
-	if(null == optdef || "" === optdef || false === optdef)
+	if(null === optdef || "" === optdef || false === optdef)
 		return autoOpts(input, config);
 	
 	
