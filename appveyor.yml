@@ -8,6 +8,7 @@ environment:
 
 install:
     - ps: Install-Product node $env:nodejs_version
+    - npx --version >NUL 2>&1 || npm install --global npx
     - npm install
 
 test_script:
