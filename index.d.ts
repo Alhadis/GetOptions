@@ -16,8 +16,8 @@ export declare type Config = {
 };
 export declare function getOpts(
 	input: any[],
-	optdef: string | { [key: string]: string },
-	config: Config
+	optdef?: string | { [key: string]: string },
+	config?: Config
 ): Options;
 
 export default getOpts;
