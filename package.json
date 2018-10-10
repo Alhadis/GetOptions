@@ -17,5 +17,9 @@
 	},
 	"eslintConfig": {
 		"extends": "@alhadis/eslint-config"
+	},
+	"scripts": {
+		"lint": "npx eslint .",
+		"test": "npx mocha test/"
 	}
 }
