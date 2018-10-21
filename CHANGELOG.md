@@ -7,6 +7,17 @@ be found by digging through the commit logs.
 This project honours [Semantic Versioning](http://semver.org/).
 
 
+[v1.1.3]
+------------------------------------------------------------------------
+**October 21st, 2018**  
+Fixed [an oversight][5] with recently-added type definitions:
+
+* __Fixed:__ Breakage in TypeScript if optional parameters were omitted
+* __Fixed:__ Incomplete option typing for `noAliasPropagation`
+
+ [5]: https://github.com/Alhadis/GetOptions/pull/9
+
+
 [v1.1.2]
 ------------------------------------------------------------------------
 **October 11th, 2018**  
@@ -56,6 +67,7 @@ Initial release.
 
 
 [Referenced links]:_____________________________________________________
+[v1.1.3]: https://github.com/Alhadis/GetOptions/releases/tag/v1.1.3
 [v1.1.2]: https://github.com/Alhadis/GetOptions/releases/tag/v1.1.2
 [v1.1.1]: https://github.com/Alhadis/GetOptions/releases/tag/v1.1.1
 [v1.1.0]: https://github.com/Alhadis/GetOptions/releases/tag/v1.1.0

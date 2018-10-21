@@ -1,6 +1,6 @@
 {
 	"name": "get-options",
-	"version": "1.1.2",
+	"version": "1.1.3",
 	"description": "JavaScript's answer to getopts. Simple, obvious, and direct.",
 	"keywords": ["CLI", "getopt", "getopts", "options", "argv", "command-line", "configuration", "config"],
 	"repository": "https://github.com/Alhadis/GetOptions",
