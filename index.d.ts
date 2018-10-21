@@ -17,7 +17,7 @@ export = getOpts;
 declare namespace getOpts {
 	export type Options = { options: any; argv: string[] };
 	export type Config = {
-		noAliasPropagation?: boolean |  "first-only";
+		noAliasPropagation?: boolean | "first-only";
 		noCamelCase?: boolean;
 		noBundling?: boolean;
 		ignoreEquals?: boolean;
