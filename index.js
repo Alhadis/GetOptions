@@ -174,6 +174,67 @@ function uniqueStrings(input){
 
 
 /**
+ * Parse a string as a whitespace-delimited list of options,
+ * preserving quoted and escaped characters.
+ *
+ * @example unstringify("--foo --bar")     => ["--foo", "--bar"];
+ * @example unstringify('--foo "bar baz"') => ["--foo", '"bar baz"'];
+ * @param {String} input
+ * @return {Object}
+ * @internal
+ */
+function unstringify(input){
+	input = String(input || "");
+	const tokens   = [];
+	const {length} = input;
+	
+	let quoteChar  = "";    // Quote-type enclosing current region
+	let tokenData  = "";    // Characters currently being collected
+	let isEscaped  = false; // Flag identifying an escape sequence
+	
+	for(let i = 0; i < length; ++i){
+		const char = input[i];
+		
+		// Previous character was a backslash
+		if(isEscaped){
+			tokenData += char;
+			isEscaped = false;
+			continue;
+		}
+		
+		// Whitespace: terminate token unless quoted
+		if(!quoteChar && /[ \t\n]/.test(char)){
+			tokenData && tokens.push(tokenData);
+			tokenData = "";
+			continue;
+		}
+		
+		// Backslash: escape next character
+		if("\\" === char){
+			isEscaped = true;
+			
+			// Swallow backslash if it escapes a metacharacter
+			const next = input[i + 1];
+			if(quoteChar && (quoteChar === next || "\\" === next)
+			|| !quoteChar && /[- \t\n\\'"`]/.test(next))
+				continue;
+		}
+		
+		// Quote marks
+		else if((!quoteChar || char === quoteChar) && /['"`]/.test(char)){
+			quoteChar = quoteChar === char ? "" : char;
+			continue;
+		}
+		
+		tokenData += char;
+	}
+	if(tokenData)
+		tokens.push(tokenData);
+	return tokens;
+}
+
+
+/**
  * Parse input using "best guess" logic. Called when no optdef is passed.
  *
  * Essentially, the following assumptions are made about input:
@@ -264,7 +325,7 @@ function autoOpts(input, config = {}){
 /**
  * Extract command-line options from a list of strings.
  *
- * @param {Array} input
+ * @param {String|Array} input
  * @param {String|Object} [optdef=null]
  * @param {Object} [config={}]
  */
@@ -273,6 +334,15 @@ function getOpts(input, optdef = null, config = {}){
 	// Do nothing if given nothing
 	if(!input || 0 === input.length)
 		return {options: {}, argv: []};
+	
+	// Avoid modifying original array
+	if(Array.isArray(input))
+		input = [...input].map(String);
+	
+	// If called with a string, break it apart into an array
+	else if("string" === typeof input)
+		input = unstringify(input);
+	
 	
 	// Take a different approach if optdefs aren't specified
 	if(null === optdef || "" === optdef || false === optdef)

@@ -7,6 +7,12 @@ be found by digging through the commit logs.
 This project honours [Semantic Versioning](http://semver.org/).
 
 
+[Staged]
+------------------------------------------------------------------------
+* __Added:__ Ability to extract option-lists from strings
+* __Fixed:__ Options array being modified by reference
+
+
 [v1.1.3]
 ------------------------------------------------------------------------
 **October 21st, 2018**  
@@ -67,6 +73,7 @@ Initial release.
 
 
 [Referenced links]:_____________________________________________________
+[Staged]: https://github.com/Alhadis/GetOptions/compare/v1.1.3...HEAD
 [v1.1.3]: https://github.com/Alhadis/GetOptions/releases/tag/v1.1.3
 [v1.1.2]: https://github.com/Alhadis/GetOptions/releases/tag/v1.1.2
 [v1.1.1]: https://github.com/Alhadis/GetOptions/releases/tag/v1.1.1
