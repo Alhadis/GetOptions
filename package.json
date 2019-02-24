@@ -18,7 +18,10 @@
 		"chai":  "^4.2.0"
 	},
 	"eslintConfig": {
-		"extends": "@alhadis/eslint-config"
+		"extends": "@alhadis/eslint-config",
+		"globals": {
+			"assert": true
+		}
 	},
 	"scripts": {
 		"lint": "npx eslint . && npx tslint *.ts",
