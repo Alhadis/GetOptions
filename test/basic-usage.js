@@ -1,7 +1,6 @@
 "use strict";
 
 const getOpts = require("../index.js");
-const {assert} = require("chai");
 
 
 suite("Basic usage", () => {

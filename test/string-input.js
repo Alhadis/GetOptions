@@ -1,7 +1,6 @@
 "use strict";
 
 const getOpts = require("../index.js");
-const {assert} = require("chai");
 
 
 suite("String input", () => {
@@ -153,7 +152,7 @@ suite("String input", () => {
 		expect('"\\--foo"',   {"--foo": ""},     {argv: ["\\--foo"],   options: {}});
 		expect('"\\\\--foo"', {"--foo": ""},     {argv: ["\\--foo"],   options: {}});
 		
-		// Assert that parsing esaped option-strings won't have affect arrays
+		// Assert that parsing escaped option-strings won't affect arrays
 		expect(["\\--foo"],     {"--foo": ""}, {argv: ["\\--foo"],     options: {}});
 		expect(["\\ --foo"],    {"--foo": ""}, {argv: ["\\ --foo"],    options: {}});
 		expect(['"\\--foo"'],   {"--foo": ""}, {argv: ['"\\--foo"'],   options: {}});
