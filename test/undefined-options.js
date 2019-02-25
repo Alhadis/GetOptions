@@ -54,7 +54,7 @@ suite("Undefined options", () => {
 		], {"--bar": ""}, {
 			noUndefined: arg =>
 				new ReferenceError(`Can't find switch named "${arg.replace(/^-+/, "")}"`),
-		}), ReferenceError, `Can't find switch named "unknown"`);
+		}), ReferenceError, "Can't find switch named `unknown`");
 	});
 	
 	

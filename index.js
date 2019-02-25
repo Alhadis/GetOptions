@@ -694,7 +694,7 @@ function getOpts(input, optdef = null, config = {}){
 					// Prepare an error object to be thrown in the user's direction
 					switch(typeof noUndefined){
 						case "function": error = error(arg); break;
-						case "boolean":  error = `Unknown option: "%s"`; // Fall-through
+						case "boolean":  error = 'Unknown option: "%s"'; // Fall-through
 						case "string":   error = new TypeError(error.replace("%s", arg));
 					}
 					throw error;
