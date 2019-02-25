@@ -159,6 +159,28 @@ function formatName(input, noCamelCase){
 
 
 /**
+ * Test a string against a list of patterns.
+ *
+ * @param {String} input
+ * @param {String[]|RegExp[]} patterns
+ * @return {Boolean}
+ * @internal
+ */
+function match(input, patterns = []){
+	if(!patterns || 0 === patterns.length)
+		return false;
+	
+	input    = String(input);
+	patterns = arrayify(patterns).filter(Boolean);
+	for(const pattern of patterns)
+		if((pattern === input && "string" === typeof pattern)
+		|| (pattern instanceof RegExp) && pattern.test(input))
+			return true;
+	return false;
+}
+
+
+/**
  * Filter duplicate strings from an array.
  *
  * @param {String[]} input
@@ -363,6 +385,9 @@ function getOpts(input, optdef = null, config = {}){
 		noAliasPropagation,
 		noCamelCase,
 		noBundling,
+		noMixedOrder,
+		noUndefined,
+		terminator,
 		ignoreEquals,
 		duplicates = "use-last",
 	} = config;
@@ -645,14 +670,43 @@ function getOpts(input, optdef = null, config = {}){
 		}
 		
 		else{
+			const isTerminator = match(arg, terminator);
+			const keepRest = () => result.argv.push(...input.slice(i + 1));
+			
 			// A previous option is still collecting arguments
-			if(currentOption && currentOption.canCollect)
+			if(currentOption && currentOption.canCollect && !isTerminator)
 				currentOption.values.push(arg);
 			
-			// Not associated with an option; push this value onto the argv array
+			// Not associated with an option
 			else{
 				currentOption && wrapItUp();
+				
+				// Terminate option parsing?
+				if(isTerminator){
+					keepRest();
+					break;
+				}
+				
+				// Raise an exception if unrecognised switches are considered an error
+				if(noUndefined && /^-./.test(arg)){
+					let error = noUndefined;
+					
+					// Prepare an error object to be thrown in the user's direction
+					switch(typeof noUndefined){
+						case "function": error = error(arg); break;
+						case "boolean":  error = `Unknown option: "%s"`; // Fall-through
+						case "string":   error = new TypeError(error.replace("%s", arg));
+					}
+					throw error;
+				}
+				
 				result.argv.push(arg);
+				
+				// Finish processing if mixed-order is disabled
+				if(noMixedOrder){
+					keepRest();
+					break;
+				}
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 // Import the function like 
-// import getOpts  = require('get-options');
+// import getOpts = require("get-options");
 // If you need the types you can import them like normal
-// import { Options } from 'get-options';
+// import { Options } from "get-options";
 
 /**
  * Extract command-line options from a list of strings.
@@ -20,7 +20,10 @@ declare namespace getOpts {
 		noAliasPropagation?: boolean | "first-only";
 		noCamelCase?: boolean;
 		noBundling?: boolean;
+		noMixedOrder?: boolean;
+		noUndefined?: boolean;
 		ignoreEquals?: boolean;
+		terminator?: string | RegExp;
 		duplicates?:
 			| "use-first"
 			| "use-last"
