@@ -288,6 +288,6 @@ suite("Terminators", () => {
 				options: {foo: ["1", "2", undefined]},
 				argv: ["--foo", "4"],
 			},
-		}]) assert.deepEqual(getOpts(input, optdef, {...config, terminator}), expected);
+		}]) assert.deepEqual(getOpts(input, optdef, Object.assign({}, config, {terminator})), expected);
 	});
 });

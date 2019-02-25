@@ -19,9 +19,8 @@
 	},
 	"eslintConfig": {
 		"extends": "@alhadis/eslint-config",
-		"globals": {
-			"assert": true
-		}
+		"globals": {"assert": true},
+		"rules": {"prefer-object-spread": 0}
 	},
 	"scripts": {
 		"lint": "npx eslint . && npx tslint *.ts",
