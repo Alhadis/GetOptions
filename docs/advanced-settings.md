@@ -11,7 +11,10 @@ The supported settings and their default values are:
     <a href="#ignoreequals">ignoreEquals</a>:        false,
     <a href="#noaliaspropagation">noAliasPropagation</a>:  false,
     <a href="#nobundling">noBundling</a>:          false,
-    <a href="#nocamelcase">noCamelCase</a>:         false
+    <a href="#nocamelcase">noCamelCase</a>:         false,
+    <a href="#nomixedorder">noMixedOrder</a>:        false,
+    <a href="#noundefined">noUndefined</a>:         false,
+    <a href="#terminator">terminator</a>:          null,
 });</code></pre>
 
 
@@ -196,3 +199,31 @@ If you prefer to keep names verbatim, just set `noCamelCase` to any truthy value
 
      $  program  --set-size
     ->  options["set-size"]
+
+
+
+noMixedOrder
+------------
+
+Terminate option-processing at the first non-option:
+
+     $  program  --global outdated   # This would work
+     $  program  outdated --global   # This would not
+
+Normally, the whole argument list is traversed and filtered free of recognised option declarations.
+If you're building complex subcommands with their own option-lists, you'll want `noMixedOrder` enabled. Seriously.
+
+
+
+noUndefined
+-----------
+
+Throw a [`TypeError`](https://mdn.io/TypeError) if an unrecognised option is passed whilst still parsing options.
+
+Custom error messages may be specified to replace the default `Unknown option: "%s"`. If that isn't enough, you can also supply a callback to return something more specific to throw at the user.
+
+
+terminator
+----------
+
+A string (conventionally a double-dash) signifying that option parsing is to stop and all remaining elements should be treated verbatim.

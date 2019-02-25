@@ -10,7 +10,14 @@ This project honours [Semantic Versioning](http://semver.org/).
 [Staged]
 ------------------------------------------------------------------------
 * __Added:__ Ability to extract option-lists from strings
+* __Added:__ Setting to [disable mixed-order][6] option/argument lists
+* __Added:__ Setting to [throw an error][7] for unrecognised options
+* __Added:__ Support for [terminating][8] options using a double-dash
 * __Fixed:__ Options array being modified by reference
+
+ [6]: ./docs/advanced-settings.md#nomixedorder
+ [7]: ./docs/advanced-settings.md#noundefined
+ [8]: ./docs/advanced-settings.md#terminator
 
 
 [v1.1.3]
