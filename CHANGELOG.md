@@ -7,8 +7,11 @@ be found by digging through the commit logs.
 This project honours [Semantic Versioning](http://semver.org/).
 
 
-[Staged]
+[v1.2.0]
 ------------------------------------------------------------------------
+**February 27th, 2019**  
+Introduced several features to simplify control of option processing.
+
 * __Added:__ Ability to extract option-lists from strings
 * __Added:__ Setting to [disable mixed-order][6] option/argument lists
 * __Added:__ Setting to [throw an error][7] for unrecognised options
@@ -80,7 +83,8 @@ Initial release.
 
 
 [Referenced links]:_____________________________________________________
-[Staged]: https://github.com/Alhadis/GetOptions/compare/v1.1.3...HEAD
+[Staged]: https://github.com/Alhadis/GetOptions/compare/v1.2.0...HEAD
+[v1.2.0]: https://github.com/Alhadis/GetOptions/releases/tag/v1.2.0
 [v1.1.3]: https://github.com/Alhadis/GetOptions/releases/tag/v1.1.3
 [v1.1.2]: https://github.com/Alhadis/GetOptions/releases/tag/v1.1.2
 [v1.1.1]: https://github.com/Alhadis/GetOptions/releases/tag/v1.1.1
