@@ -524,18 +524,17 @@ function getOpts(input, optdef = null, config = {}){
 		else{
 			const {names} = option;
 			
-			// Ascertain if this option's being duplicated
-			if(result.options[ names[0] ])
-				value = resolveDuplicate(option, value);
-			
-			
-			option.names.forEach(name => {
+			for(let name of names){
 				
 				// Decide whether to camelCase this option name
 				name = formatName(name, noCamelCase);
 				
+				// Ascertain if this option's being duplicated
+				if(result.options[name])
+					resolveDuplicate(option, name, value);
+				
 				result.options[name] = value;
-			});
+			}
 		}
 	}
 	
